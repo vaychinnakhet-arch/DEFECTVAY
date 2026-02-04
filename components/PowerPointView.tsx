@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { DefectRecord } from '../types';
-import { Presentation, Copy, CheckCircle2 } from 'lucide-react';
+import { Presentation, Copy, CheckCircle2, ImageDown } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface PowerPointViewProps {
   defects: DefectRecord[];
 }
 
 const PowerPointView: React.FC<PowerPointViewProps> = ({ defects }) => {
+  const tableRef = useRef<HTMLDivElement>(null);
+
   // Aggregate data by category
   const categoryStats = React.useMemo(() => {
     const stats: Record<string, { total: number; fixed: number; remaining: number }> = {};
@@ -32,6 +35,25 @@ const PowerPointView: React.FC<PowerPointViewProps> = ({ defects }) => {
   const grandRemaining = grandTotal - grandFixed;
   const grandProgress = grandTotal > 0 ? (grandFixed / grandTotal) * 100 : 0;
 
+  const handleExportImage = async () => {
+    if (tableRef.current) {
+        try {
+            const canvas = await html2canvas(tableRef.current, {
+                scale: 2, // High resolution
+                backgroundColor: '#ffffff',
+                useCORS: true
+            });
+            const link = document.createElement('a');
+            link.download = `ppt-overview-${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch (error) {
+            console.error('Snapshot failed', error);
+            alert('Failed to generate image.');
+        }
+    }
+  };
+
   return (
     <div className="animate-fade-in space-y-8">
       <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
@@ -45,14 +67,23 @@ const PowerPointView: React.FC<PowerPointViewProps> = ({ defects }) => {
                <p className="text-slate-500">High-visibility table for PowerPoint slides</p>
              </div>
           </div>
-          <div className="p-3 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-100 flex items-center gap-2 max-w-md">
-             <Copy className="w-5 h-5 flex-shrink-0" />
-             <span><b>Tip:</b> Take a screenshot (Windows+Shift+S or Cmd+Shift+4) of the table below to paste directly into your presentation.</span>
+          <div className="flex gap-2">
+            <button 
+                onClick={handleExportImage}
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            >
+                <ImageDown className="w-4 h-4" />
+                Save Image
+            </button>
+            <div className="p-3 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-100 flex items-center gap-2 max-w-md">
+                <Copy className="w-5 h-5 flex-shrink-0" />
+                <span><b>Tip:</b> Screenshot shortcut: Win+Shift+S</span>
+            </div>
           </div>
         </div>
 
         {/* The PowerPoint Table - Designed for Screenshot */}
-        <div className="shadow-2xl mx-auto max-w-5xl bg-white"> 
+        <div ref={tableRef} className="shadow-2xl mx-auto max-w-5xl bg-white"> 
           {/* Header Strip */}
           <div className="bg-slate-800 text-white p-6 flex justify-between items-end border-b-4 border-indigo-500">
             <div>

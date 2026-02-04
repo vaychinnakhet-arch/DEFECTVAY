@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { DefectRecord, DefectStatus } from '../types';
-import { FileSpreadsheet, Printer, Plus, Trash2, FolderPlus, X, Save, Download, Upload } from 'lucide-react';
+import { FileSpreadsheet, Printer, Plus, Trash2, FolderPlus, X, Save, Download, Upload, ImageDown } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface SummaryReportProps {
   defects: DefectRecord[];
@@ -19,6 +20,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
   const [newLocationName, setNewLocationName] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
 
   // Group defects by category
   const groupedDefects = React.useMemo(() => {
@@ -156,6 +158,26 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
     reader.readAsText(file);
   };
 
+  const handleExportImage = async () => {
+    if (tableRef.current) {
+        try {
+            // We capture the table directly to ensure full scroll height is included
+            const canvas = await html2canvas(tableRef.current, {
+                scale: 2, // High resolution for mobile zoom
+                backgroundColor: '#ffffff',
+                useCORS: true
+            });
+            const link = document.createElement('a');
+            link.download = `summary-report-${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch (error) {
+            console.error('Image export failed', error);
+            alert('Failed to generate image.');
+        }
+    }
+  };
+
   const statusOptions: DefectStatus[] = ['Completed', 'Pending', 'Fixed (Wait CM)', 'No Defect', 'Not Checked'];
 
   return (
@@ -257,7 +279,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                 title="Import JSON Backup"
             >
                 <Upload className="w-4 h-4" />
-                <span className="hidden sm:inline">Import JSON</span>
+                <span className="hidden sm:inline">Import</span>
             </button>
 
             <button 
@@ -266,17 +288,26 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                 title="Backup data as JSON"
             >
                 <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Backup JSON</span>
+                <span className="hidden sm:inline">Backup</span>
             </button>
 
             <div className="h-6 w-px bg-slate-300 mx-1 hidden sm:block"></div>
+
+            <button 
+                onClick={handleExportImage} 
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                title="Save entire table as image"
+            >
+                <ImageDown className="w-4 h-4" />
+                Save Image
+            </button>
 
             <button 
                 onClick={openAddCategoryModal} 
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
                 <FolderPlus className="w-4 h-4" />
-                Add Category
+                Category
             </button>
 
             <button 
@@ -290,7 +321,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
       </div>
       
       <div className="overflow-x-auto">
-        <table className="w-full text-xl text-left border-collapse">
+        <table ref={tableRef} className="w-full text-xl text-left border-collapse bg-white">
           <thead>
             <tr className="bg-slate-100 text-slate-700">
               <th className="border border-slate-300 px-4 py-3 font-bold min-w-[200px]">Category / Location</th>

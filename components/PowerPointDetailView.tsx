@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { DefectRecord } from '../types';
-import { Presentation, Copy, CheckCircle2 } from 'lucide-react';
+import { Presentation, Copy, CheckCircle2, ImageDown } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface PowerPointDetailViewProps {
   defects: DefectRecord[];
@@ -11,6 +12,8 @@ type DisplayItem =
   | { type: 'row'; data: DefectRecord; index: number };
 
 const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+
   // 1. Group items by category to create a flat display list with headers
   const displayList = React.useMemo(() => {
     const categories: string[] = Array.from(new Set(defects.map(d => d.category)));
@@ -56,6 +59,25 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
 
   const leftColumn = displayList.slice(0, splitIndex);
   const rightColumn = displayList.slice(splitIndex);
+
+  const handleExportImage = async () => {
+    if (contentRef.current) {
+        try {
+            const canvas = await html2canvas(contentRef.current, {
+                scale: 2, // High resolution
+                backgroundColor: '#ffffff',
+                useCORS: true
+            });
+            const link = document.createElement('a');
+            link.download = `ppt-detail-${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch (error) {
+            console.error('Snapshot failed', error);
+            alert('Failed to generate image.');
+        }
+    }
+  };
 
   const renderTable = (items: DisplayItem[]) => (
     <table className="w-full text-left border-collapse align-top">
@@ -140,17 +162,26 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
                <p className="text-slate-500">Smart-split columns to keep categories intact where possible.</p>
              </div>
           </div>
-        </div>
-        <div className="p-3 bg-violet-50 text-violet-800 rounded-lg text-sm border border-violet-100 flex items-center gap-2 max-w-xl">
-           <Copy className="w-5 h-5 flex-shrink-0" />
-           <span><b>Tip:</b> Screenshot the view below. It has been compacted to fit more data.</span>
+          <div className="flex gap-2">
+             <button 
+                onClick={handleExportImage}
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            >
+                <ImageDown className="w-4 h-4" />
+                Save Image
+            </button>
+            <div className="p-3 bg-violet-50 text-violet-800 rounded-lg text-sm border border-violet-100 flex items-center gap-2 max-w-xl">
+                <Copy className="w-5 h-5 flex-shrink-0" />
+                <span><b>Tip:</b> Or use Win+Shift+S</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col items-center">
         {/* Slide Container */}
         {/* Removed fixed height/aspect-video constraint to prevent text clipping, added min-h for consistent look */}
-        <div className="bg-white shadow-2xl w-full max-w-[1280px] min-h-[720px] relative flex flex-col border border-slate-200">
+        <div ref={contentRef} className="bg-white shadow-2xl w-full max-w-[1280px] min-h-[720px] relative flex flex-col border border-slate-200">
             {/* Header */}
             <div className="bg-slate-800 text-white p-4 border-b-4 border-violet-500 flex justify-between items-end shrink-0">
                 <div>
