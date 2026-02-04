@@ -22,6 +22,16 @@ const App: React.FC = () => {
     setDefects(prev => prev.map(d => d.id === updated.id ? updated : d));
   };
 
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this record?')) {
+      setDefects(prev => prev.filter(d => d.id !== id));
+    }
+  };
+
+  const handleAdd = (newDefect: DefectRecord) => {
+    setDefects(prev => [...prev, newDefect]);
+  };
+
   const NavButton = ({ mode, icon, label, activeColorClass = 'text-blue-700' }: { mode: ViewMode, icon: React.ReactNode, label: string, activeColorClass?: string }) => {
     const isActive = viewMode === mode;
     return (
@@ -147,7 +157,12 @@ const App: React.FC = () => {
                 <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Summary & Data Entry</h2>
                 <p className="text-slate-500 mt-1">Edit defects, target dates, and statuses directly in the table below. Changes update PPT views automatically.</p>
              </div>
-             <SummaryReport defects={defects} onUpdate={handleUpdate} />
+             <SummaryReport 
+                defects={defects} 
+                onUpdate={handleUpdate} 
+                onAdd={handleAdd}
+                onDelete={handleDelete}
+             />
            </div>
         )}
 
