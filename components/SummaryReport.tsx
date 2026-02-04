@@ -166,6 +166,14 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 onclone: (clonedDoc) => {
+                    // Hide elements marked as print:hidden (Delete column, Add Row buttons)
+                    const hiddenElements = clonedDoc.querySelectorAll('.print\\:hidden');
+                    hiddenElements.forEach((el) => {
+                        if (el instanceof HTMLElement) {
+                            el.style.display = 'none';
+                        }
+                    });
+
                     // Fix Input Alignment: Replace inputs with flexbox centered divs
                     const inputs = clonedDoc.querySelectorAll('input');
                     inputs.forEach(input => {
