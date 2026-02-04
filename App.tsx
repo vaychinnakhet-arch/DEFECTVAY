@@ -2,15 +2,13 @@ import React, { useState } from 'react';
 import { INITIAL_DEFECTS } from './constants';
 import { DefectRecord } from './types';
 import Dashboard from './components/Dashboard';
-import DefectList from './components/DefectList';
 import SummaryReport from './components/SummaryReport';
 import PowerPointView from './components/PowerPointView';
 import PowerPointDetailView from './components/PowerPointDetailView';
-import { LayoutDashboard, Table as TableIcon, Building2, FileSpreadsheet, Presentation, ListChecks } from 'lucide-react';
+import { LayoutDashboard, Building2, FileSpreadsheet, Presentation, ListChecks } from 'lucide-react';
 
 enum ViewMode {
   DASHBOARD = 'dashboard',
-  TABLE = 'table',
   SUMMARY = 'summary',
   PPT = 'ppt',
   PPT_DETAIL = 'ppt_detail'
@@ -22,20 +20,6 @@ const App: React.FC = () => {
 
   const handleUpdate = (updated: DefectRecord) => {
     setDefects(prev => prev.map(d => d.id === updated.id ? updated : d));
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this record?')) {
-      setDefects(prev => prev.filter(d => d.id !== id));
-    }
-  };
-
-  const handleAdd = (newDefect: DefectRecord) => {
-    setDefects(prev => [...prev, newDefect]);
-  };
-
-  const handleImport = (importedData: DefectRecord[]) => {
-    setDefects(importedData);
   };
 
   const NavButton = ({ mode, icon, label, activeColorClass = 'text-blue-700' }: { mode: ViewMode, icon: React.ReactNode, label: string, activeColorClass?: string }) => {
@@ -82,14 +66,9 @@ const App: React.FC = () => {
                 label="Dashboard" 
               />
               <NavButton 
-                mode={ViewMode.TABLE} 
-                icon={<TableIcon className="w-4 h-4" />} 
-                label="Data Entry" 
-              />
-              <NavButton 
                 mode={ViewMode.SUMMARY} 
                 icon={<FileSpreadsheet className="w-4 h-4" />} 
-                label="Summary" 
+                label="Summary / Input" 
                 activeColorClass="text-emerald-600"
               />
               <NavButton 
@@ -162,27 +141,11 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {viewMode === ViewMode.TABLE && (
-          <div className="animate-fade-in print:hidden">
-             <div className="mb-8">
-                <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Defect Registry</h2>
-                <p className="text-slate-500 mt-1">Manage, update, and track defect records per location.</p>
-             </div>
-             <DefectList 
-               defects={defects} 
-               onUpdate={handleUpdate} 
-               onDelete={handleDelete}
-               onAdd={handleAdd}
-               onImport={handleImport}
-             />
-          </div>
-        )}
-
         {viewMode === ViewMode.SUMMARY && (
            <div className="animate-fade-in">
               <div className="mb-8 print:hidden">
-                <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Project Summary Report</h2>
-                <p className="text-slate-500 mt-1">Detailed breakdown of total, fixed, and remaining defects. Click numbers to edit.</p>
+                <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Summary & Data Entry</h2>
+                <p className="text-slate-500 mt-1">Edit defects, target dates, and statuses directly in the table below. Changes update PPT views automatically.</p>
              </div>
              <SummaryReport defects={defects} onUpdate={handleUpdate} />
            </div>

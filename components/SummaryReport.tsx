@@ -1,6 +1,7 @@
 import React from 'react';
-import { DefectRecord } from '../types';
+import { DefectRecord, DefectStatus } from '../types';
 import { FileSpreadsheet, Printer } from 'lucide-react';
+import { STATUS_COLORS } from '../constants';
 
 interface SummaryReportProps {
   defects: DefectRecord[];
@@ -24,22 +25,29 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate }) => {
   const totalRemaining = totalDefects - totalFixed;
   const progressPercentage = totalDefects > 0 ? (totalFixed / totalDefects) * 100 : 0;
 
-  const handleNumberChange = (id: string, field: 'totalDefects' | 'fixedDefects', value: string) => {
-    const numValue = parseInt(value);
-    if (isNaN(numValue)) return; // Prevent invalid input
-
+  const handleUpdate = (id: string, field: keyof DefectRecord, value: string | number) => {
     const defect = defects.find(d => d.id === id);
     if (defect) {
-      const updatedDefect = { ...defect, [field]: numValue };
-      // Optional: Auto-update status based on numbers
-      if (updatedDefect.totalDefects > 0 && updatedDefect.totalDefects === updatedDefect.fixedDefects) {
-        updatedDefect.status = 'Completed';
-      } else if (updatedDefect.fixedDefects === 0 && updatedDefect.totalDefects > 0) {
-        updatedDefect.status = 'Pending';
-      }
-      onUpdate(updatedDefect);
+        let updatedDefect = { ...defect, [field]: value };
+        
+        // Auto-logic for status if numbers change
+        if (field === 'totalDefects' || field === 'fixedDefects') {
+             const t = Number(updatedDefect.totalDefects);
+             const f = Number(updatedDefect.fixedDefects);
+             if (t > 0 && t === f) {
+                 updatedDefect.status = 'Completed';
+             } else if (f === 0 && t > 0) {
+                 // Only reset to Pending if it was completed, otherwise keep current status (e.g. Wait CM) unless manual override needed?
+                 // Let's keep it simple: if not complete, and was complete, go to Pending.
+                 if (defect.status === 'Completed') updatedDefect.status = 'Pending';
+             }
+        }
+
+        onUpdate(updatedDefect);
     }
   };
+
+  const statusOptions: DefectStatus[] = ['Completed', 'Pending', 'Fixed (Wait CM)', 'No Defect', 'Not Checked'];
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
@@ -49,8 +57,8 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate }) => {
              <FileSpreadsheet className="w-5 h-5 text-white" />
            </div>
            <div>
-             <h3 className="text-lg font-bold text-slate-800">Summary Report (ตารางสรุป)</h3>
-             <p className="text-sm text-slate-500">Categorized view • Click numbers to edit</p>
+             <h3 className="text-lg font-bold text-slate-800">Summary Report & Input</h3>
+             <p className="text-sm text-slate-500">Edit values below to update the system.</p>
            </div>
         </div>
         <button 
@@ -66,11 +74,12 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate }) => {
         <table className="w-full text-sm text-left border-collapse">
           <thead>
             <tr className="bg-slate-100 text-slate-700">
-              <th className="border border-slate-300 px-4 py-3 font-semibold min-w-[200px]">Category / Location (บริเวณ)</th>
-              <th className="border border-slate-300 px-2 py-3 text-center bg-slate-200/50 font-semibold w-24">Total (รายการ)</th>
-              <th className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-emerald-50/50 font-semibold w-24">Fixed (เสร็จ)</th>
-              <th className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-red-50/50 font-semibold w-24">Left (เหลือ)</th>
-              <th className="border border-slate-300 px-4 py-3 text-center font-semibold w-32">Status (สถานะ)</th>
+              <th className="border border-slate-300 px-4 py-3 font-semibold min-w-[200px]">Category / Location</th>
+              <th className="border border-slate-300 px-2 py-3 text-center bg-slate-200/50 font-semibold w-20">Total</th>
+              <th className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-emerald-50/50 font-semibold w-20">Fixed</th>
+              <th className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-red-50/50 font-semibold w-16">Left</th>
+              <th className="border border-slate-300 px-4 py-3 text-center font-semibold w-32">Target Date</th>
+              <th className="border border-slate-300 px-4 py-3 text-center font-semibold w-40">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -91,6 +100,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate }) => {
                     <td className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-slate-200/40">{catFixed}</td>
                     <td className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-slate-200/40">{catRemaining}</td>
                     <td className="border border-slate-300 px-4 py-3 bg-slate-200/40"></td>
+                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40"></td>
                   </tr>
 
                   {/* Defect Items */}
@@ -105,32 +115,47 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate }) => {
                            <input 
                               type="number"
                               min="0"
-                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 text-slate-900 font-medium"
+                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 text-slate-900 font-medium appearance-none"
                               value={defect.totalDefects}
-                              onChange={(e) => handleNumberChange(defect.id, 'totalDefects', e.target.value)}
+                              onChange={(e) => handleUpdate(defect.id, 'totalDefects', parseInt(e.target.value) || 0)}
                            />
                         </td>
                         <td className="border border-slate-300 px-0 py-0 text-center bg-emerald-50/10 relative">
                            <input 
                               type="number"
                               min="0"
-                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:z-10 text-emerald-700 font-medium"
+                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:z-10 text-emerald-700 font-medium appearance-none"
                               value={defect.fixedDefects}
-                              onChange={(e) => handleNumberChange(defect.id, 'fixedDefects', e.target.value)}
+                              onChange={(e) => handleUpdate(defect.id, 'fixedDefects', parseInt(e.target.value) || 0)}
                            />
                         </td>
                         <td className="border border-slate-300 px-4 py-2 text-center text-red-600 font-bold bg-red-50/10">
                           {remaining}
                         </td>
-                        <td className="border border-slate-300 px-4 py-2 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium border ${
-                            defect.status === 'Completed' ? 'bg-green-100 text-green-800 border-green-200' :
-                            defect.status === 'Pending' ? 'bg-red-100 text-red-800 border-red-200' :
-                            defect.status === 'Fixed (Wait CM)' ? 'bg-amber-100 text-amber-800 border-amber-200' :
-                            'bg-slate-100 text-slate-800 border-slate-200'
-                          }`}>
-                            {defect.status}
-                          </span>
+                        <td className="border border-slate-300 px-0 py-0 text-center relative">
+                           <input 
+                              type="text"
+                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 text-indigo-700 font-medium text-xs"
+                              placeholder="-"
+                              value={defect.targetDate || ''}
+                              onChange={(e) => handleUpdate(defect.id, 'targetDate', e.target.value)}
+                           />
+                        </td>
+                        <td className="border border-slate-300 px-1 py-1 text-center">
+                           <select 
+                              className={`w-full text-xs font-bold border-0 bg-transparent py-1 rounded cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none ${
+                                defect.status === 'Completed' ? 'text-green-700' :
+                                defect.status === 'Pending' ? 'text-red-700' :
+                                defect.status === 'Fixed (Wait CM)' ? 'text-amber-700' :
+                                'text-slate-700'
+                              }`}
+                              value={defect.status}
+                              onChange={(e) => handleUpdate(defect.id, 'status', e.target.value)}
+                           >
+                              {statusOptions.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                           </select>
                         </td>
                       </tr>
                     );
@@ -145,7 +170,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate }) => {
               <td className="border border-slate-600 px-2 py-4 text-center text-lg">{totalDefects}</td>
               <td className="border border-slate-600 px-2 py-4 text-center text-lg text-emerald-300">{totalFixed}</td>
               <td className="border border-slate-600 px-4 py-4 text-center text-lg text-red-300">{totalRemaining}</td>
-              <td className="border border-slate-600 px-4 py-4 text-center text-sm font-normal text-slate-300">
+              <td colSpan={2} className="border border-slate-600 px-4 py-4 text-center text-sm font-normal text-slate-300">
                 {progressPercentage.toFixed(1)}% Complete
               </td>
             </tr>
