@@ -13,11 +13,16 @@ type DisplayItem =
 const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) => {
   // 1. Group items by category to create a flat display list with headers
   const displayList = React.useMemo(() => {
-    const categories: string[] = Array.from(new Set(defects.map(d => d.category)));
+    if (!defects || defects.length === 0) return [];
+
+    // Order categories based on the order they appear in the defects list to maintain logical flow
+    // specific to the constants.ts order (Rooftop -> Hallway -> Garbage -> Stairs -> Rooms -> Facade)
+    const uniqueCategories = Array.from(new Set(defects.map(d => d.category))) as string[];
+    
     const list: DisplayItem[] = [];
     let globalIndex = 1;
 
-    categories.forEach(cat => {
+    uniqueCategories.forEach(cat => {
       const items = defects.filter(d => d.category === cat);
       if (items.length > 0) {
         list.push({ type: 'header', title: cat });
@@ -31,28 +36,33 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
 
   // 2. Intelligent Split Logic
   // Try to split at a category header closest to the middle to avoid breaking groups
-  let splitIndex = Math.ceil(displayList.length / 2); // Default to exact half
-
-  // Find indices of all headers (excluding the first one at index 0)
-  const headerIndices = displayList
-    .map((item, index) => ({ isHeader: item.type === 'header', index }))
-    .filter(x => x.isHeader && x.index > 0)
-    .map(x => x.index);
-
-  if (headerIndices.length > 0) {
-    // Find the header index mathematically closest to the midpoint
+  const splitIndex = React.useMemo(() => {
+    if (displayList.length === 0) return 0;
+    
     const idealMid = displayList.length / 2;
-    const bestHeaderSplit = headerIndices.reduce((prev, curr) => {
-      return Math.abs(curr - idealMid) < Math.abs(prev - idealMid) ? curr : prev;
-    });
+    
+    // Find indices of all headers (excluding the very first one at index 0, as splitting there makes no sense)
+    const headerIndices = displayList
+      .map((item, index) => ({ isHeader: item.type === 'header', index }))
+      .filter(x => x.isHeader && x.index > 0)
+      .map(x => x.index);
 
-    // Only use this split if it keeps the columns reasonably balanced (e.g., between 30% and 70%)
-    // This prevents stranding a small category alone in a huge second column or vice versa.
-    const ratio = bestHeaderSplit / displayList.length;
-    if (ratio >= 0.3 && ratio <= 0.7) {
-       splitIndex = bestHeaderSplit;
+    let bestSplit = Math.ceil(idealMid); // Fallback to simple half split
+
+    if (headerIndices.length > 0) {
+      // Find the header index mathematically closest to the midpoint
+      const bestHeaderSplit = headerIndices.reduce((prev, curr) => {
+        return Math.abs(curr - idealMid) < Math.abs(prev - idealMid) ? curr : prev;
+      });
+
+      // Only use this split if it keeps the columns reasonably balanced (e.g., between 30% and 70%)
+      const ratio = bestHeaderSplit / displayList.length;
+      if (ratio >= 0.3 && ratio <= 0.7) {
+         bestSplit = bestHeaderSplit;
+      }
     }
-  }
+    return bestSplit;
+  }, [displayList]);
 
   const leftColumn = displayList.slice(0, splitIndex);
   const rightColumn = displayList.slice(splitIndex);
@@ -81,8 +91,8 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
              );
           }
 
+          // At this point, item is strictly of type 'row'
           const defect = item.data;
-          // Check for full completion based on numbers
           const isComplete = defect.totalDefects > 0 && defect.totalDefects === defect.fixedDefects;
           
           return (
@@ -149,7 +159,6 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
 
       <div className="flex flex-col items-center">
         {/* Slide Container */}
-        {/* Removed fixed height/aspect-video constraint to prevent text clipping, added min-h for consistent look */}
         <div className="bg-white shadow-2xl w-full max-w-[1280px] min-h-[720px] relative flex flex-col border border-slate-200">
             {/* Header */}
             <div className="bg-slate-800 text-white p-4 border-b-4 border-violet-500 flex justify-between items-end shrink-0">
