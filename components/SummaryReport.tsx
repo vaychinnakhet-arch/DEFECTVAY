@@ -56,6 +56,19 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
     }
   };
 
+  const handleCategoryRename = (oldCategory: string, newCategory: string) => {
+      const trimmedNew = newCategory.trim();
+      if (!trimmedNew || oldCategory === trimmedNew) return;
+      
+      const items = groupedDefects[oldCategory];
+      if (items) {
+          // Bulk update all items in this category
+          items.forEach(item => {
+              onUpdate({ ...item, category: trimmedNew });
+          });
+      }
+  };
+
   const createNewRecord = (category: string, location: string): DefectRecord => ({
     id: Math.random().toString(36).substr(2, 9),
     category,
@@ -300,11 +313,23 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                 <React.Fragment key={category}>
                   {/* Category Header Row */}
                   <tr className="bg-slate-100 text-slate-900 font-bold border-t-2 border-slate-300">
-                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40 flex justify-between items-center group">
-                      <span>{category} (รวม)</span>
+                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40 flex justify-between items-center group relative">
+                      <div className="flex-1 flex items-center mr-2">
+                          <input 
+                             type="text"
+                             defaultValue={category}
+                             className="font-bold bg-transparent hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 w-full transition-colors text-slate-800"
+                             onBlur={(e) => handleCategoryRename(category, e.target.value)}
+                             onKeyDown={(e) => {
+                               if (e.key === 'Enter') e.currentTarget.blur();
+                             }}
+                             title="Click to edit category name"
+                          />
+                          <span className="ml-2 text-slate-500 font-normal shrink-0 text-lg">(รวม)</span>
+                      </div>
                       <button 
                         onClick={() => openAddLocationModal(category)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 text-blue-700 p-1 rounded hover:bg-blue-200 print:hidden flex items-center gap-1 text-xs px-2"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 text-blue-700 p-1 rounded hover:bg-blue-200 print:hidden flex items-center gap-1 text-xs px-2 shrink-0"
                         title="Add row to this category"
                       >
                          <Plus className="w-3 h-3" /> Add Row
