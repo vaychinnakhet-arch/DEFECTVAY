@@ -335,18 +335,22 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                            <input 
                               type="number"
                               min="0"
-                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 text-slate-900 font-medium appearance-none"
-                              value={defect.totalDefects}
-                              onChange={(e) => handleUpdate(defect.id, 'totalDefects', parseInt(e.target.value) || 0)}
+                              placeholder="0"
+                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:z-10 text-slate-900 font-medium appearance-none placeholder-slate-300"
+                              value={defect.totalDefects === 0 ? '' : defect.totalDefects}
+                              onFocus={(e) => e.target.select()}
+                              onChange={(e) => handleUpdate(defect.id, 'totalDefects', e.target.value === '' ? 0 : parseInt(e.target.value))}
                            />
                         </td>
                         <td className="border border-slate-300 px-0 py-0 text-center bg-emerald-50/10 relative">
                            <input 
                               type="number"
                               min="0"
-                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:z-10 text-emerald-700 font-medium appearance-none"
-                              value={defect.fixedDefects}
-                              onChange={(e) => handleUpdate(defect.id, 'fixedDefects', parseInt(e.target.value) || 0)}
+                              placeholder="0"
+                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:z-10 text-emerald-700 font-medium appearance-none placeholder-emerald-700/30"
+                              value={defect.fixedDefects === 0 ? '' : defect.fixedDefects}
+                              onFocus={(e) => e.target.select()}
+                              onChange={(e) => handleUpdate(defect.id, 'fixedDefects', e.target.value === '' ? 0 : parseInt(e.target.value))}
                            />
                         </td>
                         <td className="border border-slate-300 px-4 py-2 text-center text-red-600 font-bold bg-red-50/10">
