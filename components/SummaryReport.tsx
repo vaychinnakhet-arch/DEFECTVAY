@@ -277,16 +277,16 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
       </div>
       
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left border-collapse">
+        <table className="w-full text-xl text-left border-collapse">
           <thead>
             <tr className="bg-slate-100 text-slate-700">
-              <th className="border border-slate-300 px-4 py-3 font-semibold min-w-[200px]">Category / Location</th>
-              <th className="border border-slate-300 px-2 py-3 text-center bg-slate-200/50 font-semibold w-20">Total</th>
-              <th className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-emerald-50/50 font-semibold w-20">Fixed</th>
-              <th className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-red-50/50 font-semibold w-16">Left</th>
-              <th className="border border-slate-300 px-4 py-3 text-center font-semibold w-32">Target Date</th>
-              <th className="border border-slate-300 px-4 py-3 text-center font-semibold w-36">Status</th>
-              <th className="border border-slate-300 px-2 py-3 text-center font-semibold w-10 print:hidden"></th>
+              <th className="border border-slate-300 px-4 py-3 font-bold min-w-[200px]">Category / Location</th>
+              <th className="border border-slate-300 px-2 py-3 text-center bg-slate-200/50 font-bold w-20">Total</th>
+              <th className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-emerald-50/50 font-bold w-20">Fixed</th>
+              <th className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-red-50/50 font-bold w-16">Left</th>
+              <th className="border border-slate-300 px-4 py-3 text-center font-bold w-32">Target Date</th>
+              <th className="border border-slate-300 px-4 py-3 text-center font-bold w-36">Status</th>
+              <th className="border border-slate-300 px-2 py-3 text-center font-bold w-10 print:hidden"></th>
             </tr>
           </thead>
           <tbody>
@@ -354,16 +354,15 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                         </td>
                         <td className="border border-slate-300 px-0 py-0 text-center relative">
                            <input 
-                              type="text"
-                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 text-indigo-700 font-medium text-xs"
-                              placeholder="-"
+                              type="date"
+                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 text-indigo-700 font-bold text-lg font-sans"
                               value={defect.targetDate || ''}
                               onChange={(e) => handleUpdate(defect.id, 'targetDate', e.target.value)}
                            />
                         </td>
                         <td className="border border-slate-300 px-1 py-1 text-center">
                            <select 
-                              className={`w-full text-xs font-bold border-0 bg-transparent py-1 rounded cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none ${
+                              className={`w-full text-lg font-bold border-0 bg-transparent py-1 rounded cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none ${
                                 defect.status === 'Completed' ? 'text-green-700' :
                                 defect.status === 'Pending' ? 'text-red-700' :
                                 defect.status === 'Fixed (Wait CM)' ? 'text-amber-700' :
@@ -395,11 +394,11 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
           </tbody>
           <tfoot className="bg-slate-800 text-white font-bold shadow-inner border-t-2 border-slate-400">
             <tr>
-              <td className="border border-slate-600 px-4 py-4 text-right text-base">Grand Total (รวมทั้งหมด):</td>
-              <td className="border border-slate-600 px-2 py-4 text-center text-lg">{totalDefects}</td>
-              <td className="border border-slate-600 px-2 py-4 text-center text-lg text-emerald-300">{totalFixed}</td>
-              <td className="border border-slate-600 px-4 py-4 text-center text-lg text-red-300">{totalRemaining}</td>
-              <td colSpan={3} className="border border-slate-600 px-4 py-4 text-center text-sm font-normal text-slate-300">
+              <td className="border border-slate-600 px-4 py-4 text-right text-xl font-bold">Grand Total (รวมทั้งหมด):</td>
+              <td className="border border-slate-600 px-2 py-4 text-center text-2xl font-bold">{totalDefects}</td>
+              <td className="border border-slate-600 px-2 py-4 text-center text-2xl text-emerald-300 font-bold">{totalFixed}</td>
+              <td className="border border-slate-600 px-4 py-4 text-center text-2xl text-red-300 font-bold">{totalRemaining}</td>
+              <td colSpan={3} className="border border-slate-600 px-4 py-4 text-center text-lg font-normal text-slate-300">
                 {progressPercentage.toFixed(1)}% Complete
               </td>
             </tr>
