@@ -15,9 +15,8 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
   const displayList = React.useMemo(() => {
     if (!defects || defects.length === 0) return [];
 
-    // Order categories based on the order they appear in the defects list to maintain logical flow
-    // specific to the constants.ts order (Rooftop -> Hallway -> Garbage -> Stairs -> Rooms -> Facade)
-    const uniqueCategories = Array.from(new Set(defects.map(d => d.category))) as string[];
+    // Get unique categories in order of appearance
+    const uniqueCategories = Array.from(new Set(defects.map(d => d.category)));
     
     const list: DisplayItem[] = [];
     let globalIndex = 1;
@@ -25,7 +24,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
     uniqueCategories.forEach(cat => {
       const items = defects.filter(d => d.category === cat);
       if (items.length > 0) {
-        list.push({ type: 'header', title: cat });
+        list.push({ type: 'header', title: String(cat) });
         items.forEach(item => {
           list.push({ type: 'row', data: item, index: globalIndex++ });
         });
@@ -35,37 +34,47 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
   }, [defects]);
 
   // 2. Intelligent Split Logic
-  // Try to split at a category header closest to the middle to avoid breaking groups
-  const splitIndex = React.useMemo(() => {
-    if (displayList.length === 0) return 0;
-    
-    const idealMid = displayList.length / 2;
-    
-    // Find indices of all headers (excluding the very first one at index 0, as splitting there makes no sense)
-    const headerIndices = displayList
-      .map((item, index) => ({ isHeader: item.type === 'header', index }))
-      .filter(x => x.isHeader && x.index > 0)
-      .map(x => x.index);
+  const { leftColumn, rightColumn } = React.useMemo(() => {
+    if (displayList.length === 0) {
+      return { leftColumn: [], rightColumn: [] };
+    }
 
-    let bestSplit = Math.ceil(idealMid); // Fallback to simple half split
+    const totalItems = displayList.length;
+    const idealMid = totalItems / 2;
+    
+    // Find indices of all headers (excluding the very first one at index 0)
+    const headerIndices = displayList
+      .map((item, index) => (item.type === 'header' && index > 0 ? index : -1))
+      .filter(index => index !== -1);
+
+    let splitIndex = Math.ceil(idealMid); // Default to simple half
 
     if (headerIndices.length > 0) {
       // Find the header index mathematically closest to the midpoint
-      const bestHeaderSplit = headerIndices.reduce((prev, curr) => {
-        return Math.abs(curr - idealMid) < Math.abs(prev - idealMid) ? curr : prev;
-      });
+      // Using a simple loop to avoid reduce complexity/errors
+      let bestDiff = Infinity;
+      let bestIdx = splitIndex;
 
-      // Only use this split if it keeps the columns reasonably balanced (e.g., between 30% and 70%)
-      const ratio = bestHeaderSplit / displayList.length;
+      for (const idx of headerIndices) {
+        const diff = Math.abs(idx - idealMid);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          bestIdx = idx;
+        }
+      }
+
+      // Check balance ratio (30/70 rule)
+      const ratio = bestIdx / totalItems;
       if (ratio >= 0.3 && ratio <= 0.7) {
-         bestSplit = bestHeaderSplit;
+        splitIndex = bestIdx;
       }
     }
-    return bestSplit;
-  }, [displayList]);
 
-  const leftColumn = displayList.slice(0, splitIndex);
-  const rightColumn = displayList.slice(splitIndex);
+    return {
+      leftColumn: displayList.slice(0, splitIndex),
+      rightColumn: displayList.slice(splitIndex)
+    };
+  }, [displayList]);
 
   const renderTable = (items: DisplayItem[]) => (
     <table className="w-full text-left border-collapse align-top">
@@ -83,7 +92,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
         {items.map((item, idx) => {
           if (item.type === 'header') {
              return (
-               <tr key={`header-${item.title}-${idx}`} className="bg-indigo-50 border-b border-indigo-100">
+               <tr key={`header-${idx}`} className="bg-indigo-50 border-b border-indigo-100 break-inside-avoid">
                  <td colSpan={6} className="py-1 px-2 text-xs font-bold text-indigo-800 uppercase tracking-wider">
                    {item.title}
                  </td>
@@ -91,12 +100,12 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
              );
           }
 
-          // At this point, item is strictly of type 'row'
           const defect = item.data;
           const isComplete = defect.totalDefects > 0 && defect.totalDefects === defect.fixedDefects;
+          const isFixedWait = defect.status === 'Fixed (Wait CM)';
           
           return (
-            <tr key={defect.id} className="border-b border-slate-100 last:border-0">
+            <tr key={defect.id} className="border-b border-slate-100 last:border-0 break-inside-avoid">
               <td className="py-1 px-1 text-xs font-semibold text-slate-400 text-center align-top">
                 {item.index}
               </td>
@@ -113,7 +122,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
                 {defect.targetDate || '-'}
               </td>
               <td className="py-1 px-1 text-center align-top">
-                {defect.status === 'Fixed (Wait CM)' ? (
+                {isFixedWait ? (
                   <span className="inline-block text-amber-700 font-bold text-[10px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 whitespace-nowrap w-full">
                     {defect.status}
                   </span>
@@ -147,13 +156,13 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
              </div>
              <div>
                <h2 className="text-2xl font-bold text-slate-900">Presentation Slides (Compact)</h2>
-               <p className="text-slate-500">Smart-split columns to keep categories intact where possible.</p>
+               <p className="text-slate-500">Auto-balanced columns by category.</p>
              </div>
           </div>
         </div>
         <div className="p-3 bg-violet-50 text-violet-800 rounded-lg text-sm border border-violet-100 flex items-center gap-2 max-w-xl">
            <Copy className="w-5 h-5 flex-shrink-0" />
-           <span><b>Tip:</b> Screenshot the view below. It has been compacted to fit more data.</span>
+           <span><b>Tip:</b> Screenshot the view below. It splits categories to keep them intact.</span>
         </div>
       </div>
 
