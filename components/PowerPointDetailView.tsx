@@ -120,20 +120,20 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
                 {defect.targetDate || '-'}
               </td>
               <td className="py-1 px-1 text-center align-middle">
-                {defect.status === 'Fixed (Wait CM)' ? (
+                {defect.status === 'แก้ไขเรียบร้อย รอนัดตรวจ' ? (
                   <span className="inline-block text-amber-700 font-bold text-[10px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 whitespace-nowrap w-full">
-                    {defect.status}
+                    รอนัดตรวจ
                   </span>
-                ) : (isComplete || defect.status === 'Completed') ? (
+                ) : (isComplete || defect.status === 'แก้ไขเรียบร้อย') ? (
                   <div className="flex justify-center items-center text-emerald-700 font-bold text-xs gap-1">
-                    <CheckCircle2 className="w-3 h-3 fill-emerald-100" /> Done
+                    <CheckCircle2 className="w-3 h-3 fill-emerald-100" /> แก้ไขเรียบร้อย
                   </div>
                 ) : (
                   <span className={`inline-block font-bold text-[10px] px-1.5 py-0.5 rounded border whitespace-nowrap ${
-                    defect.status === 'No Defect' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                    defect.status === 'ไม่มี Defect' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
                     'bg-slate-100 text-slate-600 border-slate-200'
                   }`}>
-                    {defect.status === 'Pending' ? 'Pending' : defect.status}
+                    {defect.status}
                   </span>
                 )}
               </td>

@@ -11,11 +11,11 @@ interface DashboardProps {
 }
 
 const STATUS_COLORS_CHART = {
-  'Completed': '#10b981',        // Emerald 500
-  'Pending': '#ef4444',          // Red 500
-  'Fixed (Wait CM)': '#f59e0b',  // Amber 500
-  'No Defect': '#3b82f6',        // Blue 500
-  'Not Checked': '#94a3b8',      // Slate 400
+  'แก้ไขเรียบร้อย': '#10b981',        // Emerald 500
+  'รอดำเนินการ': '#ef4444',          // Red 500
+  'แก้ไขเรียบร้อย รอนัดตรวจ': '#f59e0b',  // Amber 500
+  'ไม่มี Defect': '#3b82f6',        // Blue 500
+  'ยังไม่ตรวจ': '#94a3b8',      // Slate 400
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
@@ -43,7 +43,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
     defects.forEach(d => {
        // Simplify status logic for chart
        let statusKey = d.status;
-       if (d.totalDefects > 0 && d.totalDefects === d.fixedDefects) statusKey = 'Completed';
+       if (d.totalDefects > 0 && d.totalDefects === d.fixedDefects) statusKey = 'แก้ไขเรียบร้อย';
        
        counts[statusKey] = (counts[statusKey] || 0) + 1;
     });
@@ -52,16 +52,16 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
 
   // Helper to render status badge
   const StatusBadge = ({ status, total, fixed }: { status: string, total: number, fixed: number }) => {
-    const isCompleted = (total > 0 && total === fixed) || status === 'Completed';
+    const isCompleted = (total > 0 && total === fixed) || status === 'แก้ไขเรียบร้อย';
     
     if (isCompleted) {
-      return <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-bold bg-emerald-100 text-emerald-700">Completed</span>;
+      return <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-bold bg-emerald-100 text-emerald-700">แก้ไขเรียบร้อย</span>;
     }
-    if (status === 'Fixed (Wait CM)') {
-       return <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-bold bg-amber-100 text-amber-700">Wait CM</span>;
+    if (status === 'แก้ไขเรียบร้อย รอนัดตรวจ') {
+       return <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-bold bg-amber-100 text-amber-700">รอนัดตรวจ</span>;
     }
-    if (status === 'Pending') {
-       return <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-bold bg-red-100 text-red-700">Pending</span>;
+    if (status === 'รอดำเนินการ') {
+       return <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-bold bg-red-100 text-red-700">รอดำเนินการ</span>;
     }
     return <span className="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-bold bg-slate-100 text-slate-600">{status}</span>;
   };
@@ -208,7 +208,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                     {/* Sub-items (List) */}
                     <div className="divide-y divide-slate-50">
                         {items.map(item => {
-                        const itemComplete = (item.totalDefects > 0 && item.totalDefects === item.fixedDefects) || item.status === 'Completed';
+                        const itemComplete = (item.totalDefects > 0 && item.totalDefects === item.fixedDefects) || item.status === 'แก้ไขเรียบร้อย';
                         const itemPercentage = item.totalDefects > 0 ? Math.round((item.fixedDefects / item.totalDefects) * 100) : 0;
                         
                         return (
@@ -216,8 +216,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                             <div className="flex items-center gap-4 flex-1">
                                 <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                                     itemComplete ? 'bg-emerald-400' : 
-                                    item.status === 'Pending' ? 'bg-red-400' :
-                                    item.status === 'Fixed (Wait CM)' ? 'bg-amber-400' : 'bg-slate-300'
+                                    item.status === 'รอดำเนินการ' ? 'bg-red-400' :
+                                    item.status === 'แก้ไขเรียบร้อย รอนัดตรวจ' ? 'bg-amber-400' : 'bg-slate-300'
                                 }`}></div>
                                 <span className="text-lg font-medium text-slate-700 truncate">{item.location}</span>
                             </div>
@@ -309,7 +309,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                     </h4>
                 </div>
                 <div className="max-h-[500px] overflow-y-auto">
-                    {defects.filter(d => d.status === 'Pending' && d.totalDefects > 0).map((d) => (
+                    {defects.filter(d => d.status === 'รอดำเนินการ' && d.totalDefects > 0).map((d) => (
                         <div key={d.id} className="px-6 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors group cursor-pointer">
                         <div className="flex justify-between items-start mb-1.5">
                             <span className="text-lg font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">{d.location}</span>
@@ -321,7 +321,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                         </div>
                         </div>
                     ))}
-                    {defects.filter(d => d.status === 'Pending').length === 0 && (
+                    {defects.filter(d => d.status === 'รอดำเนินการ').length === 0 && (
                         <div className="p-10 text-center text-slate-400 text-base">
                         <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-200" />
                         No pending actions.

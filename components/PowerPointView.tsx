@@ -125,7 +125,7 @@ const PowerPointView: React.FC<PowerPointViewProps> = ({ defects }) => {
                   <td className="p-5 text-center align-middle">
                      {stat.progress === 100 ? (
                        <div className="flex justify-center items-center text-emerald-600 gap-2 font-bold text-lg">
-                          <CheckCircle2 className="w-6 h-6" /> Done
+                          <CheckCircle2 className="w-6 h-6" /> แก้ไขเรียบร้อย
                        </div>
                      ) : (
                        <div className="w-full bg-slate-200 rounded-full h-4 mt-1 overflow-hidden">

@@ -94,7 +94,7 @@ const DefectList: React.FC<DefectListProps> = ({ defects, onUpdate, onDelete, on
          location: editForm.location || 'New Location',
          totalDefects: Number(editForm.totalDefects) || 0,
          fixedDefects: Number(editForm.fixedDefects) || 0,
-         status: (editForm.status as DefectStatus) || 'Pending',
+         status: (editForm.status as DefectStatus) || 'รอดำเนินการ',
          targetDate: editForm.targetDate || '',
          note: editForm.note || ''
        };
@@ -110,7 +110,7 @@ const DefectList: React.FC<DefectListProps> = ({ defects, onUpdate, onDelete, on
     d.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const statusOptions: DefectStatus[] = ['Completed', 'Pending', 'Fixed (Wait CM)', 'No Defect', 'Not Checked'];
+  const statusOptions: DefectStatus[] = ['แก้ไขเรียบร้อย', 'รอดำเนินการ', 'แก้ไขเรียบร้อย รอนัดตรวจ', 'ไม่มี Defect', 'ยังไม่ตรวจ'];
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
@@ -156,7 +156,7 @@ const DefectList: React.FC<DefectListProps> = ({ defects, onUpdate, onDelete, on
           </button>
 
           <button 
-            onClick={() => { setIsAdding(true); setEditForm({ totalDefects: 0, fixedDefects: 0, status: 'Pending' }); }}
+            onClick={() => { setIsAdding(true); setEditForm({ totalDefects: 0, fixedDefects: 0, status: 'รอดำเนินการ' }); }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors whitespace-nowrap"
           >
             <Plus className="w-4 h-4" /> Add Row
@@ -216,7 +216,7 @@ const DefectList: React.FC<DefectListProps> = ({ defects, onUpdate, onDelete, on
                <td className="px-6 py-4">
                  <select 
                     className="w-full bg-white border border-slate-300 rounded px-2 py-1"
-                    value={editForm.status || 'Pending'}
+                    value={editForm.status || 'รอดำเนินการ'}
                     onChange={e => setEditForm({...editForm, status: e.target.value as DefectStatus})}
                  >
                    {statusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}

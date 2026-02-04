@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DefectRecord } from './types';
+import { DefectRecord, DefectStatus } from './types';
 import Dashboard from './components/Dashboard';
 import SummaryReport from './components/SummaryReport';
 import PowerPointView from './components/PowerPointView';
@@ -20,6 +20,17 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const mapStatus = (status: string): DefectStatus => {
+      const map: Record<string, DefectStatus> = {
+          'Completed': 'แก้ไขเรียบร้อย',
+          'Pending': 'รอดำเนินการ',
+          'Fixed (Wait CM)': 'แก้ไขเรียบร้อย รอนัดตรวจ',
+          'No Defect': 'ไม่มี Defect',
+          'Not Checked': 'ยังไม่ตรวจ'
+      };
+      return map[status] || status as DefectStatus;
+  };
+
   // Helper to map DB snake_case to App camelCase
   const mapFromDB = (data: any): DefectRecord => ({
     id: data.id,
@@ -27,7 +38,7 @@ const App: React.FC = () => {
     location: data.location,
     totalDefects: data.total_defects,
     fixedDefects: data.fixed_defects,
-    status: data.status,
+    status: mapStatus(data.status),
     targetDate: data.target_date || '',
     note: data.note || ''
   });
@@ -283,7 +294,7 @@ const App: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {defects.filter(d => d.status === 'Fixed (Wait CM)').map(d => (
+                        {defects.filter(d => d.status === 'แก้ไขเรียบร้อย รอนัดตรวจ').map(d => (
                           <tr key={d.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-6 py-4 font-medium text-slate-700">{d.location}</td>
                             <td className="px-6 py-4 text-slate-600">{d.totalDefects}</td>
@@ -294,7 +305,7 @@ const App: React.FC = () => {
                             </td>
                           </tr>
                         ))}
-                         {defects.filter(d => d.status === 'Fixed (Wait CM)').length === 0 && (
+                         {defects.filter(d => d.status === 'แก้ไขเรียบร้อย รอนัดตรวจ').length === 0 && (
                            <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-400 italic">No items waiting for approval.</td></tr>
                          )}
                       </tbody>

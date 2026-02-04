@@ -48,9 +48,9 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
              const t = Number(updatedDefect.totalDefects);
              const f = Number(updatedDefect.fixedDefects);
              if (t > 0 && t === f) {
-                 updatedDefect.status = 'Completed';
+                 updatedDefect.status = 'แก้ไขเรียบร้อย';
              } else if (f === 0 && t > 0) {
-                 if (defect.status === 'Completed') updatedDefect.status = 'Pending';
+                 if (defect.status === 'แก้ไขเรียบร้อย') updatedDefect.status = 'รอดำเนินการ';
              }
         }
 
@@ -77,7 +77,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
     location,
     totalDefects: 0,
     fixedDefects: 0,
-    status: 'Pending',
+    status: 'รอดำเนินการ',
     targetDate: '',
     note: ''
   });
@@ -201,7 +201,9 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                         div.style.padding = '0'; // Remove input padding for perfect centering
 
                         input.style.display = 'none';
-                        input.parentElement?.appendChild(div);
+                        // Use insertBefore to preserve DOM order (Div then Span)
+                        // This ensures "(รวม)" appears AFTER the text, not before.
+                        input.parentElement?.insertBefore(div, input);
                     });
 
                     // Fix Select Alignment
@@ -235,7 +237,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
     }
   };
 
-  const statusOptions: DefectStatus[] = ['Completed', 'Pending', 'Fixed (Wait CM)', 'No Defect', 'Not Checked'];
+  const statusOptions: DefectStatus[] = ['แก้ไขเรียบร้อย', 'รอดำเนินการ', 'แก้ไขเรียบร้อย รอนัดตรวจ', 'ไม่มี Defect', 'ยังไม่ตรวจ'];
 
   return (
     <>
@@ -433,8 +435,17 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                   {/* Defect Items */}
                   {items.map((defect) => {
                     const remaining = defect.totalDefects - defect.fixedDefects;
+
+                    // Row Highlight Logic
+                    let rowClassName = "hover:bg-blue-50/30 transition-colors group";
+                    if (defect.status === 'แก้ไขเรียบร้อย') {
+                        rowClassName = "bg-green-100/60 hover:bg-green-200/60 transition-colors group";
+                    } else if (defect.status === 'แก้ไขเรียบร้อย รอนัดตรวจ') {
+                        rowClassName = "bg-yellow-100/60 hover:bg-yellow-200/60 transition-colors group";
+                    }
+
                     return (
-                      <tr key={defect.id} className="hover:bg-blue-50/30 transition-colors group">
+                      <tr key={defect.id} className={rowClassName}>
                         <td className="border border-slate-300 px-4 py-2 font-medium text-slate-700 pl-8 relative align-middle">
                           <input 
                               type="text"
@@ -479,9 +490,9 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                         <td className="border border-slate-300 px-1 py-1 text-center align-middle">
                            <select 
                               className={`w-full text-base font-bold border-0 bg-transparent py-1 rounded cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none ${
-                                defect.status === 'Completed' ? 'text-green-700' :
-                                defect.status === 'Pending' ? 'text-red-700' :
-                                defect.status === 'Fixed (Wait CM)' ? 'text-amber-700' :
+                                defect.status === 'แก้ไขเรียบร้อย' ? 'text-green-700' :
+                                defect.status === 'รอดำเนินการ' ? 'text-red-700' :
+                                defect.status === 'แก้ไขเรียบร้อย รอนัดตรวจ' ? 'text-amber-700' :
                                 'text-slate-700'
                               }`}
                               value={defect.status}

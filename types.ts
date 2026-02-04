@@ -1,4 +1,4 @@
-export type DefectStatus = 'Completed' | 'Pending' | 'Fixed (Wait CM)' | 'No Defect' | 'Not Checked';
+export type DefectStatus = 'แก้ไขเรียบร้อย' | 'รอดำเนินการ' | 'แก้ไขเรียบร้อย รอนัดตรวจ' | 'ไม่มี Defect' | 'ยังไม่ตรวจ';
 
 export interface DefectRecord {
   id: string;
