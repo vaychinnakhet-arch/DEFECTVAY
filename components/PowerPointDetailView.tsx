@@ -33,24 +33,19 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
   }, [defects]);
 
   // 2. Intelligent Split Logic
-  // Try to split at a category header closest to the middle to avoid breaking groups
   let splitIndex = Math.ceil(displayList.length / 2); // Default to exact half
 
-  // Find indices of all headers (excluding the first one at index 0)
   const headerIndices = displayList
     .map((item, index) => ({ isHeader: item.type === 'header', index }))
     .filter(x => x.isHeader && x.index > 0)
     .map(x => x.index);
 
   if (headerIndices.length > 0) {
-    // Find the header index mathematically closest to the midpoint
     const idealMid = displayList.length / 2;
     const bestHeaderSplit = headerIndices.reduce((prev, curr) => {
       return Math.abs(curr - idealMid) < Math.abs(prev - idealMid) ? curr : prev;
     });
 
-    // Only use this split if it keeps the columns reasonably balanced (e.g., between 30% and 70%)
-    // This prevents stranding a small category alone in a huge second column or vice versa.
     const ratio = bestHeaderSplit / displayList.length;
     if (ratio >= 0.3 && ratio <= 0.7) {
        splitIndex = bestHeaderSplit;
@@ -80,15 +75,15 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
   };
 
   const renderTable = (items: DisplayItem[]) => (
-    <table className="w-full text-left border-collapse align-top">
+    <table className="w-full text-left border-collapse align-middle">
       <thead>
         <tr className="border-b-2 border-slate-300">
-          <th className="py-1 px-1 text-xs font-bold text-slate-800 w-8 text-center">#</th>
-          <th className="py-1 px-1 text-xs font-bold text-slate-800">LOCATION</th>
-          <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-10">TOT</th>
-          <th className="py-1 px-1 text-xs font-bold text-emerald-700 text-center w-10">FIX</th>
-          <th className="py-1 px-1 text-xs font-bold text-indigo-700 text-center w-16">TARGET</th>
-          <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-28">STATUS</th>
+          <th className="py-1 px-1 text-xs font-bold text-slate-800 w-8 text-center align-middle">#</th>
+          <th className="py-1 px-1 text-xs font-bold text-slate-800 align-middle">LOCATION</th>
+          <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-10 align-middle">TOT</th>
+          <th className="py-1 px-1 text-xs font-bold text-emerald-700 text-center w-10 align-middle">FIX</th>
+          <th className="py-1 px-1 text-xs font-bold text-indigo-700 text-center w-16 align-middle">TARGET</th>
+          <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-28 align-middle">STATUS</th>
         </tr>
       </thead>
       <tbody>
@@ -96,7 +91,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
           if (item.type === 'header') {
              return (
                <tr key={`header-${item.title}-${idx}`} className="bg-indigo-50 border-b border-indigo-100">
-                 <td colSpan={6} className="py-1 px-2 text-xs font-bold text-indigo-800 uppercase tracking-wider">
+                 <td colSpan={6} className="py-1 px-2 text-xs font-bold text-indigo-800 uppercase tracking-wider align-middle">
                    {item.title}
                  </td>
                </tr>
@@ -109,22 +104,22 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
           
           return (
             <tr key={defect.id} className="border-b border-slate-100 last:border-0">
-              <td className="py-1 px-1 text-xs font-semibold text-slate-400 text-center align-top">
+              <td className="py-1 px-1 text-xs font-semibold text-slate-400 text-center align-middle">
                 {item.index}
               </td>
-              <td className="py-1 px-1 text-xs sm:text-sm font-bold text-slate-800 break-words align-top leading-tight">
+              <td className="py-1 px-1 text-xs sm:text-sm font-bold text-slate-800 break-words align-middle leading-tight">
                 {defect.location}
               </td>
-              <td className="py-1 px-1 text-sm text-center font-bold text-slate-600 align-top">
+              <td className="py-1 px-1 text-sm text-center font-bold text-slate-600 align-middle">
                 {defect.totalDefects}
               </td>
-              <td className="py-1 px-1 text-sm text-center font-bold text-emerald-600 align-top">
+              <td className="py-1 px-1 text-sm text-center font-bold text-emerald-600 align-middle">
                 {defect.fixedDefects}
               </td>
-              <td className="py-1 px-1 text-xs text-center font-medium text-indigo-600 align-top whitespace-nowrap">
+              <td className="py-1 px-1 text-xs text-center font-medium text-indigo-600 align-middle whitespace-nowrap">
                 {defect.targetDate || '-'}
               </td>
-              <td className="py-1 px-1 text-center align-top">
+              <td className="py-1 px-1 text-center align-middle">
                 {defect.status === 'Fixed (Wait CM)' ? (
                   <span className="inline-block text-amber-700 font-bold text-[10px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 whitespace-nowrap w-full">
                     {defect.status}
@@ -180,7 +175,6 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
 
       <div className="flex flex-col items-center">
         {/* Slide Container */}
-        {/* Removed fixed height/aspect-video constraint to prevent text clipping, added min-h for consistent look */}
         <div ref={contentRef} className="bg-white shadow-2xl w-full max-w-[1280px] min-h-[720px] relative flex flex-col border border-slate-200">
             {/* Header */}
             <div className="bg-slate-800 text-white p-4 border-b-4 border-violet-500 flex justify-between items-end shrink-0">

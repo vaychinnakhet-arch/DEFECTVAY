@@ -161,11 +161,68 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
   const handleExportImage = async () => {
     if (tableRef.current) {
         try {
-            // We capture the table directly to ensure full scroll height is included
             const canvas = await html2canvas(tableRef.current, {
-                scale: 2, // High resolution for mobile zoom
+                scale: 2, 
                 backgroundColor: '#ffffff',
-                useCORS: true
+                useCORS: true,
+                onclone: (clonedDoc) => {
+                    // Fix Input Alignment: Replace inputs with flexbox centered divs
+                    const inputs = clonedDoc.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        const div = clonedDoc.createElement('div');
+                        div.textContent = input.value;
+                        div.style.height = '100%';
+                        div.style.display = 'flex';
+                        div.style.alignItems = 'center'; // Vertical Center
+                        
+                        // Smart Width Handling: 
+                        // If input has siblings (like the "(รวม)" span), use flex-grow logic instead of 100% width
+                        if (input.nextElementSibling || input.previousElementSibling) {
+                             div.style.width = 'auto';
+                             div.style.flex = '1';
+                             div.style.minWidth = '0'; 
+                        } else {
+                             div.style.width = '100%';
+                        }
+                        
+                        // Check explicit alignment class or default to left
+                        if (input.className.includes('text-center')) {
+                            div.style.justifyContent = 'center'; 
+                        } else if (input.className.includes('text-right')) {
+                            div.style.justifyContent = 'flex-end';
+                        } else {
+                            div.style.justifyContent = 'flex-start';
+                        }
+
+                        // Copy font styles
+                        div.className = input.className;
+                        div.style.border = 'none';
+                        div.style.backgroundColor = 'transparent';
+                        div.style.padding = '0'; // Remove input padding for perfect centering
+
+                        input.style.display = 'none';
+                        input.parentElement?.appendChild(div);
+                    });
+
+                    // Fix Select Alignment
+                    const selects = clonedDoc.querySelectorAll('select');
+                    selects.forEach(select => {
+                        const div = clonedDoc.createElement('div');
+                        div.textContent = select.options[select.selectedIndex]?.text || '';
+                        div.style.width = '100%';
+                        div.style.height = '100%';
+                        div.style.display = 'flex';
+                        div.style.alignItems = 'center';
+                        div.style.justifyContent = 'center'; // Force center for status
+                        
+                        div.className = select.className;
+                        div.style.border = 'none';
+                        div.style.backgroundColor = 'transparent';
+
+                        select.style.display = 'none';
+                        select.parentElement?.appendChild(div);
+                    });
+                }
             });
             const link = document.createElement('a');
             link.download = `summary-report-${new Date().toISOString().split('T')[0]}.png`;
@@ -321,32 +378,29 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
       </div>
       
       <div className="overflow-x-auto">
-        {/* Adjusted to text-sm (16px) for body to fit new Sarabun sizing, removed text-xl */}
         <table ref={tableRef} className="w-full text-sm text-left border-collapse bg-white">
           <thead>
-            {/* Headers use default size inheritance, effectively text-sm (16px), or we can boost slightly to text-base (18px) */}
             <tr className="bg-slate-100 text-slate-700 text-base">
-              <th className="border border-slate-300 px-4 py-3 font-bold min-w-[200px]">Category / Location</th>
-              <th className="border border-slate-300 px-2 py-3 text-center bg-slate-200/50 font-bold w-20">Total</th>
-              <th className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-emerald-50/50 font-bold w-20">Fixed</th>
-              <th className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-red-50/50 font-bold w-16">Left</th>
-              <th className="border border-slate-300 px-4 py-3 text-center font-bold w-32">Target Date</th>
-              <th className="border border-slate-300 px-4 py-3 text-center font-bold w-36">Status</th>
-              <th className="border border-slate-300 px-2 py-3 text-center font-bold w-10 print:hidden"></th>
+              <th className="border border-slate-300 px-4 py-3 font-bold min-w-[200px] align-middle">Category / Location</th>
+              <th className="border border-slate-300 px-2 py-3 text-center bg-slate-200/50 font-bold w-20 align-middle">Total</th>
+              <th className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-emerald-50/50 font-bold w-20 align-middle">Fixed</th>
+              <th className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-red-50/50 font-bold w-16 align-middle">Left</th>
+              <th className="border border-slate-300 px-4 py-3 text-center font-bold w-32 align-middle">Target Date</th>
+              <th className="border border-slate-300 px-4 py-3 text-center font-bold w-36 align-middle">Status</th>
+              <th className="border border-slate-300 px-2 py-3 text-center font-bold w-10 print:hidden align-middle"></th>
             </tr>
           </thead>
           <tbody>
             {Object.entries(groupedDefects).map(([category, items]: [string, DefectRecord[]]) => {
-              // Calculate Subtotals for the category
               const catTotal = items.reduce((sum, d) => sum + d.totalDefects, 0);
               const catFixed = items.reduce((sum, d) => sum + d.fixedDefects, 0);
               const catRemaining = catTotal - catFixed;
 
               return (
                 <React.Fragment key={category}>
-                  {/* Category Header Row - Slightly larger text for category title */}
+                  {/* Category Header Row */}
                   <tr className="bg-slate-100 text-slate-900 font-bold border-t-2 border-slate-300 text-base">
-                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40 flex justify-between items-center group relative">
+                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40 flex justify-between items-center group relative align-middle">
                       <div className="flex-1 flex items-center mr-2">
                           <input 
                              type="text"
@@ -368,12 +422,12 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                          <Plus className="w-3 h-3" /> Add Row
                       </button>
                     </td>
-                    <td className="border border-slate-300 px-2 py-3 text-center bg-slate-200/40">{catTotal}</td>
-                    <td className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-slate-200/40">{catFixed}</td>
-                    <td className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-slate-200/40">{catRemaining}</td>
-                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40"></td>
-                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40"></td>
-                    <td className="border border-slate-300 px-2 py-3 bg-slate-200/40 print:hidden"></td>
+                    <td className="border border-slate-300 px-2 py-3 text-center bg-slate-200/40 align-middle">{catTotal}</td>
+                    <td className="border border-slate-300 px-2 py-3 text-center text-emerald-700 bg-slate-200/40 align-middle">{catFixed}</td>
+                    <td className="border border-slate-300 px-4 py-3 text-center text-red-700 bg-slate-200/40 align-middle">{catRemaining}</td>
+                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40 align-middle"></td>
+                    <td className="border border-slate-300 px-4 py-3 bg-slate-200/40 align-middle"></td>
+                    <td className="border border-slate-300 px-2 py-3 bg-slate-200/40 print:hidden align-middle"></td>
                   </tr>
 
                   {/* Defect Items */}
@@ -381,7 +435,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                     const remaining = defect.totalDefects - defect.fixedDefects;
                     return (
                       <tr key={defect.id} className="hover:bg-blue-50/30 transition-colors group">
-                        <td className="border border-slate-300 px-4 py-2 font-medium text-slate-700 pl-8 relative">
+                        <td className="border border-slate-300 px-4 py-2 font-medium text-slate-700 pl-8 relative align-middle">
                           <input 
                               type="text"
                               className="w-full bg-transparent focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-300 rounded px-1"
@@ -389,7 +443,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                               onChange={(e) => handleUpdate(defect.id, 'location', e.target.value)}
                            />
                         </td>
-                        <td className="border border-slate-300 px-0 py-0 text-center bg-slate-50/30 relative">
+                        <td className="border border-slate-300 px-0 py-0 text-center bg-slate-50/30 relative align-middle">
                            <input 
                               type="number"
                               min="0"
@@ -400,7 +454,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                               onChange={(e) => handleUpdate(defect.id, 'totalDefects', e.target.value === '' ? 0 : parseInt(e.target.value))}
                            />
                         </td>
-                        <td className="border border-slate-300 px-0 py-0 text-center bg-emerald-50/10 relative">
+                        <td className="border border-slate-300 px-0 py-0 text-center bg-emerald-50/10 relative align-middle">
                            <input 
                               type="number"
                               min="0"
@@ -411,10 +465,10 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                               onChange={(e) => handleUpdate(defect.id, 'fixedDefects', e.target.value === '' ? 0 : parseInt(e.target.value))}
                            />
                         </td>
-                        <td className="border border-slate-300 px-4 py-2 text-center text-red-600 font-bold bg-red-50/10">
+                        <td className="border border-slate-300 px-4 py-2 text-center text-red-600 font-bold bg-red-50/10 align-middle">
                           {remaining}
                         </td>
-                        <td className="border border-slate-300 px-0 py-0 text-center relative">
+                        <td className="border border-slate-300 px-0 py-0 text-center relative align-middle">
                            <input 
                               type="date"
                               className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 text-indigo-700 font-bold text-base font-sans"
@@ -422,7 +476,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                               onChange={(e) => handleUpdate(defect.id, 'targetDate', e.target.value)}
                            />
                         </td>
-                        <td className="border border-slate-300 px-1 py-1 text-center">
+                        <td className="border border-slate-300 px-1 py-1 text-center align-middle">
                            <select 
                               className={`w-full text-base font-bold border-0 bg-transparent py-1 rounded cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none ${
                                 defect.status === 'Completed' ? 'text-green-700' :
@@ -438,7 +492,7 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                               ))}
                            </select>
                         </td>
-                        <td className="border border-slate-300 px-1 py-1 text-center print:hidden">
+                        <td className="border border-slate-300 px-1 py-1 text-center print:hidden align-middle">
                            <button 
                              onClick={() => onDelete(defect.id)}
                              className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
@@ -456,11 +510,11 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
           </tbody>
           <tfoot className="bg-slate-800 text-white font-bold shadow-inner border-t-2 border-slate-400 text-lg">
             <tr>
-              <td className="border border-slate-600 px-4 py-4 text-right font-bold">Grand Total (รวมทั้งหมด):</td>
-              <td className="border border-slate-600 px-2 py-4 text-center font-bold">{totalDefects}</td>
-              <td className="border border-slate-600 px-2 py-4 text-center text-emerald-300 font-bold">{totalFixed}</td>
-              <td className="border border-slate-600 px-4 py-4 text-center text-red-300 font-bold">{totalRemaining}</td>
-              <td colSpan={3} className="border border-slate-600 px-4 py-4 text-center font-normal text-slate-300">
+              <td className="border border-slate-600 px-4 py-4 text-right font-bold align-middle">Grand Total (รวมทั้งหมด):</td>
+              <td className="border border-slate-600 px-2 py-4 text-center font-bold align-middle">{totalDefects}</td>
+              <td className="border border-slate-600 px-2 py-4 text-center text-emerald-300 font-bold align-middle">{totalFixed}</td>
+              <td className="border border-slate-600 px-4 py-4 text-center text-red-300 font-bold align-middle">{totalRemaining}</td>
+              <td colSpan={3} className="border border-slate-600 px-4 py-4 text-center font-normal text-slate-300 align-middle">
                 {progressPercentage.toFixed(1)}% Complete
               </td>
             </tr>
