@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { DefectRecord } from '../types';
-import { ImageDown, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { ImageDown, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 interface DashboardProps {
@@ -9,6 +9,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   // --- Data Aggregation Logic ---
 
@@ -64,28 +65,45 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
   const handleExportImage = async () => {
     if (contentRef.current) {
         try {
+            // Temporarily expand all for screenshot or keep as is? 
+            // Keeping as is (user sees what they see).
+            
             const canvas = await html2canvas(contentRef.current, {
                 scale: 3, // High scale for clear text
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 onclone: (clonedDoc) => {
-                    // Force text alignment on clone to ensure centering in the output image
-                    const textCentered = clonedDoc.querySelectorAll('.text-center');
-                    textCentered.forEach((el) => {
+                    // 1. Force main text alignment
+                    const centerAligned = clonedDoc.querySelectorAll('.text-center');
+                    centerAligned.forEach((el) => {
                         if (el instanceof HTMLElement) {
                             el.style.textAlign = 'center';
-                            el.style.width = '100%'; 
+                            el.style.width = '100%';
+                            el.style.display = 'block'; 
                         }
                     });
-                    
-                    // Force flex centering
-                    const flexCentered = clonedDoc.querySelectorAll('.flex-col.items-center');
-                    flexCentered.forEach((el) => {
-                         if (el instanceof HTMLElement) {
-                            el.style.display = 'flex';
-                            el.style.flexDirection = 'column';
-                            el.style.alignItems = 'center';
+
+                    // 2. Specific fix for Flex Column Containers that need centering (The Header & Status Boxes)
+                    const flexCenterBoxes = clonedDoc.querySelectorAll('.flex-col.items-center.justify-center');
+                    flexCenterBoxes.forEach((el) => {
+                        if (el instanceof HTMLElement) {
+                             el.style.display = 'flex';
+                             el.style.flexDirection = 'column';
+                             el.style.alignItems = 'center';
+                             el.style.justifyContent = 'center';
+                             el.style.textAlign = 'center';
                         }
+                    });
+
+                    // 3. Fix the specific status card containers by class if generic selector fails
+                    const statusCards = clonedDoc.querySelectorAll('.bg-emerald-50, .bg-red-50, .bg-amber-50, .bg-slate-900');
+                    statusCards.forEach((card) => {
+                         if (card instanceof HTMLElement) {
+                             card.style.display = 'flex';
+                             card.style.flexDirection = 'column';
+                             card.style.alignItems = 'center';
+                             card.style.justifyContent = 'center';
+                         }
                     });
                 }
             });
@@ -98,6 +116,49 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
             alert('Failed to generate image.');
         }
     }
+  };
+
+  const toggleExpand = (key: string) => {
+    setExpandedKey(prev => prev === key ? null : key);
+  };
+
+  // Helper to render expanded detail list
+  const renderDetails = (categoryName: string, type: 'fixed' | 'pending' | 'waiting') => {
+    let items: DefectRecord[] = [];
+    let countKey: 'fixedDefects' | 'totalDefects' | 'remaining' = 'totalDefects';
+
+    if (type === 'fixed') {
+        items = verifiedFixedItems.filter(d => d.category === categoryName);
+        countKey = 'fixedDefects';
+    } else if (type === 'waiting') {
+        items = waitingItems.filter(d => d.category === categoryName);
+        countKey = 'totalDefects';
+    } else { // pending
+        items = defects.filter(d => 
+            d.category === categoryName && 
+            d.status !== 'แก้ไขเรียบร้อย รอนัดตรวจ' && 
+            d.status !== 'แก้ไขเรียบร้อย' &&
+            (d.totalDefects - d.fixedDefects > 0)
+        );
+        countKey = 'remaining';
+    }
+
+    return (
+        <div className="mt-2 pl-2 pr-2 border-t border-slate-100 pt-2 space-y-1 animate-fade-in">
+            {items.map(item => {
+                const count = countKey === 'remaining' 
+                    ? (item.totalDefects - item.fixedDefects) 
+                    : item[countKey];
+                
+                return (
+                    <div key={item.id} className="flex justify-between items-start text-xs text-slate-500 py-1 border-b border-slate-50 last:border-0">
+                        <span className="truncate pr-2">{item.location}</span>
+                        <span className="font-mono font-semibold bg-slate-100 px-1.5 rounded">{count}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
   };
 
   return (
@@ -119,8 +180,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
             {/* --- LEVEL 1: HEAD (TOTAL) --- */}
             <div className="relative z-10 mb-10 w-full flex flex-col items-center">
                 <div className="bg-slate-900 text-white px-16 py-8 rounded-2xl shadow-xl flex flex-col items-center justify-center min-w-[360px] text-center border-4 border-slate-100">
-                    <h2 className="text-xl font-bold uppercase tracking-widest text-slate-300 w-full text-center">DEFECT ทั้งหมด</h2>
-                    <div className="text-7xl font-black mt-2 leading-none w-full text-center">{grandTotal} <span className="text-2xl font-normal text-slate-400">ข้อ</span></div>
+                    <h2 className="text-xl font-bold uppercase tracking-widest text-slate-300 w-full text-center block">DEFECT ทั้งหมด</h2>
+                    <div className="text-7xl font-black mt-2 leading-none w-full text-center block">{grandTotal} <span className="text-2xl font-normal text-slate-400">ข้อ</span></div>
                 </div>
                 {/* Connector Line Down */}
                 <div className="h-10 w-1.5 bg-slate-200"></div>
@@ -143,18 +204,34 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                             <div className="absolute -top-5 bg-white p-2 rounded-full border border-emerald-100 shadow-sm">
                                 <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                             </div>
-                            <h3 className="text-emerald-800 font-bold text-2xl mt-2 text-center w-full">แก้ไขแล้ว</h3>
-                            <div className="text-5xl font-black text-emerald-600 mt-2 text-center w-full">{verifiedFixedCount} <span className="text-lg font-normal text-emerald-800/60">ข้อ</span></div>
+                            <h3 className="text-emerald-800 font-bold text-2xl mt-2 text-center w-full block">แก้ไขแล้ว</h3>
+                            <div className="text-5xl font-black text-emerald-600 mt-2 text-center w-full block">{verifiedFixedCount} <span className="text-lg font-normal text-emerald-800/60">ข้อ</span></div>
                         </div>
 
                         {/* Sub-branches (List) */}
                         <div className="w-full space-y-3">
-                            {fixedCategories.map((cat, idx) => (
-                                <div key={idx} className="bg-white border border-emerald-100 px-5 py-3 rounded-xl flex justify-between items-center shadow-sm hover:shadow-md transition-shadow">
-                                    <span className="text-slate-700 font-semibold text-base truncate">{cat.name}</span>
-                                    <span className="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-lg text-sm">{cat.count}</span>
-                                </div>
-                            ))}
+                            {fixedCategories.map((cat, idx) => {
+                                const key = `fixed-${cat.name}`;
+                                const isExpanded = expandedKey === key;
+                                return (
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => toggleExpand(key)}
+                                        className={`bg-white border px-5 py-3 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer ${
+                                            isExpanded ? 'border-emerald-300 ring-1 ring-emerald-100' : 'border-emerald-100'
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2 overflow-hidden">
+                                                {isExpanded ? <ChevronUp className="w-4 h-4 text-emerald-500 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+                                                <span className="text-slate-700 font-semibold text-base truncate">{cat.name}</span>
+                                            </div>
+                                            <span className="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-lg text-sm">{cat.count}</span>
+                                        </div>
+                                        {isExpanded && renderDetails(cat.name, 'fixed')}
+                                    </div>
+                                );
+                            })}
                              {fixedCategories.length === 0 && <div className="text-center text-slate-400 italic">No items</div>}
                         </div>
                     </div>
@@ -169,18 +246,34 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                              <div className="absolute -top-5 bg-white p-2 rounded-full border border-red-100 shadow-sm">
                                 <XCircle className="w-8 h-8 text-red-500" />
                             </div>
-                            <h3 className="text-red-800 font-bold text-2xl mt-2 text-center w-full">ยังไม่แก้ไข</h3>
-                            <div className="text-5xl font-black text-red-600 mt-2 text-center w-full">{pendingCount} <span className="text-lg font-normal text-red-800/60">ข้อ</span></div>
+                            <h3 className="text-red-800 font-bold text-2xl mt-2 text-center w-full block">ยังไม่แก้ไข</h3>
+                            <div className="text-5xl font-black text-red-600 mt-2 text-center w-full block">{pendingCount} <span className="text-lg font-normal text-red-800/60">ข้อ</span></div>
                         </div>
 
                         {/* Sub-branches (List) */}
                         <div className="w-full space-y-3">
-                            {pendingCategories.map((cat, idx) => (
-                                <div key={idx} className="bg-white border border-red-100 px-5 py-3 rounded-xl flex justify-between items-center shadow-sm hover:shadow-md transition-shadow">
-                                    <span className="text-slate-700 font-semibold text-base truncate">{cat.name}</span>
-                                    <span className="bg-red-100 text-red-800 font-bold px-3 py-1 rounded-lg text-sm">{cat.count}</span>
-                                </div>
-                            ))}
+                            {pendingCategories.map((cat, idx) => {
+                                const key = `pending-${cat.name}`;
+                                const isExpanded = expandedKey === key;
+                                return (
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => toggleExpand(key)}
+                                        className={`bg-white border px-5 py-3 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer ${
+                                            isExpanded ? 'border-red-300 ring-1 ring-red-100' : 'border-red-100'
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                             <div className="flex items-center gap-2 overflow-hidden">
+                                                {isExpanded ? <ChevronUp className="w-4 h-4 text-red-500 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+                                                <span className="text-slate-700 font-semibold text-base truncate">{cat.name}</span>
+                                            </div>
+                                            <span className="bg-red-100 text-red-800 font-bold px-3 py-1 rounded-lg text-sm">{cat.count}</span>
+                                        </div>
+                                        {isExpanded && renderDetails(cat.name, 'pending')}
+                                    </div>
+                                );
+                            })}
                             {pendingCategories.length === 0 && <div className="text-center text-slate-400 italic">No items</div>}
                         </div>
                     </div>
@@ -195,18 +288,34 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                             <div className="absolute -top-5 bg-white p-2 rounded-full border border-amber-100 shadow-sm">
                                 <Clock className="w-8 h-8 text-amber-500" />
                             </div>
-                            <h3 className="text-amber-800 font-bold text-2xl mt-2 text-center w-full">แก้ไขแล้วรอตรวจ</h3>
-                            <div className="text-5xl font-black text-amber-600 mt-2 text-center w-full">{waitingCount} <span className="text-lg font-normal text-amber-800/60">ข้อ</span></div>
+                            <h3 className="text-amber-800 font-bold text-2xl mt-2 text-center w-full block">แก้ไขแล้วรอตรวจ</h3>
+                            <div className="text-5xl font-black text-amber-600 mt-2 text-center w-full block">{waitingCount} <span className="text-lg font-normal text-amber-800/60">ข้อ</span></div>
                         </div>
 
                         {/* Sub-branches (List) */}
                         <div className="w-full space-y-3">
-                            {waitingCategories.map((cat, idx) => (
-                                <div key={idx} className="bg-white border border-amber-100 px-5 py-3 rounded-xl flex justify-between items-center shadow-sm hover:shadow-md transition-shadow">
-                                    <span className="text-slate-700 font-semibold text-base truncate">{cat.name}</span>
-                                    <span className="bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-lg text-sm">{cat.count}</span>
-                                </div>
-                            ))}
+                            {waitingCategories.map((cat, idx) => {
+                                const key = `waiting-${cat.name}`;
+                                const isExpanded = expandedKey === key;
+                                return (
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => toggleExpand(key)}
+                                        className={`bg-white border px-5 py-3 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer ${
+                                            isExpanded ? 'border-amber-300 ring-1 ring-amber-100' : 'border-amber-100'
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2 overflow-hidden">
+                                                {isExpanded ? <ChevronUp className="w-4 h-4 text-amber-500 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+                                                <span className="text-slate-700 font-semibold text-base truncate">{cat.name}</span>
+                                            </div>
+                                            <span className="bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-lg text-sm">{cat.count}</span>
+                                        </div>
+                                        {isExpanded && renderDetails(cat.name, 'waiting')}
+                                    </div>
+                                );
+                            })}
                             {waitingCategories.length === 0 && <div className="text-center text-slate-400 italic">No items</div>}
                         </div>
                     </div>
