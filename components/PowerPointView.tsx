@@ -100,26 +100,26 @@ const PowerPointView: React.FC<PowerPointViewProps> = ({ defects }) => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-100 border-b-2 border-slate-300">
-                <th className="p-5 text-xl font-bold text-slate-800 w-1/3 border-r border-slate-200">CATEGORY</th>
-                <th className="p-5 text-xl font-bold text-slate-700 text-center w-1/6 border-r border-slate-200">TOTAL</th>
-                <th className="p-5 text-xl font-bold text-emerald-700 text-center w-1/6 border-r border-slate-200">FIXED</th>
-                <th className="p-5 text-xl font-bold text-red-700 text-center w-1/6 border-r border-slate-200">REMAINING</th>
-                <th className="p-5 text-xl font-bold text-slate-700 text-center w-1/6">STATUS</th>
+                <th className="p-5 text-lg font-bold text-slate-800 w-1/3 border-r border-slate-200">CATEGORY</th>
+                <th className="p-5 text-lg font-bold text-slate-700 text-center w-1/6 border-r border-slate-200">TOTAL</th>
+                <th className="p-5 text-lg font-bold text-emerald-700 text-center w-1/6 border-r border-slate-200">FIXED</th>
+                <th className="p-5 text-lg font-bold text-red-700 text-center w-1/6 border-r border-slate-200">REMAINING</th>
+                <th className="p-5 text-lg font-bold text-slate-700 text-center w-1/6">STATUS</th>
               </tr>
             </thead>
             <tbody>
               {categoryStats.map((stat, index) => (
                 <tr key={stat.name} className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'} border-b border-slate-200`}>
-                  <td className="p-5 text-xl font-semibold text-slate-800 border-r border-slate-200">
+                  <td className="p-5 text-lg font-semibold text-slate-800 border-r border-slate-200">
                     {stat.name}
                   </td>
-                  <td className="p-5 text-2xl text-center font-bold text-slate-600 border-r border-slate-200">
+                  <td className="p-5 text-xl text-center font-bold text-slate-600 border-r border-slate-200">
                     {stat.total}
                   </td>
-                  <td className="p-5 text-2xl text-center font-bold text-emerald-600 border-r border-slate-200">
+                  <td className="p-5 text-xl text-center font-bold text-emerald-600 border-r border-slate-200">
                     {stat.fixed}
                   </td>
-                  <td className="p-5 text-2xl text-center font-bold text-red-600 border-r border-slate-200">
+                  <td className="p-5 text-xl text-center font-bold text-red-600 border-r border-slate-200">
                     {stat.remaining}
                   </td>
                   <td className="p-5 text-center align-middle">
@@ -141,10 +141,10 @@ const PowerPointView: React.FC<PowerPointViewProps> = ({ defects }) => {
             </tbody>
             <tfoot className="bg-slate-800 text-white border-t-4 border-indigo-500">
               <tr>
-                <td className="p-6 text-2xl font-bold uppercase tracking-wider border-r border-slate-600">Grand Total</td>
-                <td className="p-6 text-3xl text-center font-bold border-r border-slate-600">{grandTotal}</td>
-                <td className="p-6 text-3xl text-center font-bold text-emerald-400 border-r border-slate-600">{grandFixed}</td>
-                <td className="p-6 text-3xl text-center font-bold text-red-400 border-r border-slate-600">{grandRemaining}</td>
+                <td className="p-6 text-xl font-bold uppercase tracking-wider border-r border-slate-600">Grand Total</td>
+                <td className="p-6 text-2xl text-center font-bold border-r border-slate-600">{grandTotal}</td>
+                <td className="p-6 text-2xl text-center font-bold text-emerald-400 border-r border-slate-600">{grandFixed}</td>
+                <td className="p-6 text-2xl text-center font-bold text-red-400 border-r border-slate-600">{grandRemaining}</td>
                 <td className="p-6 text-center">
                    <span className="text-xl font-medium text-slate-300">Target: 100%</span>
                 </td>
