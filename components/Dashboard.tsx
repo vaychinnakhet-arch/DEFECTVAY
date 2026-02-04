@@ -64,7 +64,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
   };
 
   return (
-    <div className="space-y-6 font-inter">
+    <div className="space-y-6">
       {/* 1. HERO SECTION: Flat Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Total Card */}

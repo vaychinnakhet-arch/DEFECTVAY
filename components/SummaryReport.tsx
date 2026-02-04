@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { DefectRecord, DefectStatus } from '../types';
-import { FileSpreadsheet, Printer, Plus, Trash2, FolderPlus, X, Save } from 'lucide-react';
+import { FileSpreadsheet, Printer, Plus, Trash2, FolderPlus, X, Save, Download, Upload } from 'lucide-react';
 
 interface SummaryReportProps {
   defects: DefectRecord[];
   onUpdate: (updated: DefectRecord) => void;
   onAdd: (newRecord: DefectRecord) => void;
   onDelete: (id: string) => void;
+  onImport: (data: DefectRecord[]) => void;
 }
 
-const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd, onDelete }) => {
+const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd, onDelete, onImport }) => {
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'CATEGORY' | 'LOCATION'>('CATEGORY');
   const [targetCategory, setTargetCategory] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newLocationName, setNewLocationName] = useState('');
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Group defects by category
   const groupedDefects = React.useMemo(() => {
@@ -91,10 +94,68 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
       setModalOpen(false);
   };
 
+  // --- Import / Export Logic ---
+  const handleExportJSON = () => {
+    const dataStr = JSON.stringify(defects, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `vay-chinnakhet-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = e.target?.result as string;
+        const data = JSON.parse(json);
+        if (Array.isArray(data)) {
+           // Basic check for data integrity
+           if (data.length > 0 && (!data[0].id || !data[0].location)) {
+               alert("Invalid data format: Missing required fields in JSON.");
+               return;
+           }
+           if (window.confirm(`Found ${data.length} records. Import and update database?`)) {
+               onImport(data);
+           }
+        } else {
+            alert("Invalid JSON format. Expected an array.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to parse JSON file.");
+      }
+      // Reset input so the same file can be selected again if needed
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+
   const statusOptions: DefectStatus[] = ['Completed', 'Pending', 'Fixed (Wait CM)', 'No Defect', 'Not Checked'];
 
   return (
     <>
+    {/* Hidden File Input for Import */}
+    <input 
+        type="file" 
+        accept=".json" 
+        ref={fileInputRef} 
+        className="hidden" 
+        onChange={handleFileChange} 
+    />
+
     {/* Custom Modal */}
     {modalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
@@ -165,8 +226,8 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
     )}
 
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
-      <div className="p-5 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50 print:hidden">
-        <div className="flex items-center gap-3">
+      <div className="p-5 border-b border-slate-200 flex flex-col xl:flex-row justify-between items-center gap-4 bg-slate-50 print:hidden">
+        <div className="flex items-center gap-3 w-full xl:w-auto">
            <div className="bg-emerald-600 p-2 rounded-lg shadow-sm">
              <FileSpreadsheet className="w-5 h-5 text-white" />
            </div>
@@ -175,20 +236,42 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
              <p className="text-sm text-slate-500">Manage your data directly in the table below.</p>
            </div>
         </div>
-        <div className="flex items-center gap-2">
+        
+        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-end">
             <button 
-            onClick={openAddCategoryModal} 
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                onClick={handleImportClick}
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                title="Import JSON Backup"
             >
-            <FolderPlus className="w-4 h-4" />
-            Add Category (เพิ่มหมวด)
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Import JSON</span>
             </button>
+
             <button 
-            onClick={() => window.print()} 
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                onClick={handleExportJSON}
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                title="Backup data as JSON"
             >
-            <Printer className="w-4 h-4" />
-            Print
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Backup JSON</span>
+            </button>
+
+            <div className="h-6 w-px bg-slate-300 mx-1 hidden sm:block"></div>
+
+            <button 
+                onClick={openAddCategoryModal} 
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+                <FolderPlus className="w-4 h-4" />
+                Add Category
+            </button>
+
+            <button 
+                onClick={() => window.print()} 
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            >
+                <Printer className="w-4 h-4" />
+                Print
             </button>
         </div>
       </div>

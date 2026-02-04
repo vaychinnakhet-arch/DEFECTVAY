@@ -1,43 +1,53 @@
 import { DefectRecord } from './types';
 
 export const INITIAL_DEFECTS: DefectRecord[] = [
-  // Rooftop
-  { id: '1', category: 'ดาดฟ้า', location: 'Rooftop (ดาดฟ้า)', totalDefects: 10, fixedDefects: 10, status: 'Completed' },
+  // Facade
+  { id: '101', category: 'รูปด้านอาคาร', location: 'Building Facade (รูปด้านอาคาร)', totalDefects: 19, fixedDefects: 19, status: 'Completed' },
   
-  // Hallway
-  { id: '2', category: 'โถงทางเดิน', location: 'Floor 2', totalDefects: 16, fixedDefects: 16, status: 'Completed' },
-  { id: '3', category: 'โถงทางเดิน', location: 'Floor 3', totalDefects: 23, fixedDefects: 0, status: 'Fixed (Wait CM)' },
-  { id: '4', category: 'โถงทางเดิน', location: 'Floor 4', totalDefects: 23, fixedDefects: 0, status: 'Pending', targetDate: '10 ก.พ.' },
-  { id: '5', category: 'โถงทางเดิน', location: 'Floor 5', totalDefects: 39, fixedDefects: 0, status: 'Pending', targetDate: '14 ก.พ.' },
-  { id: '6', category: 'โถงทางเดิน', location: 'Floor 6', totalDefects: 39, fixedDefects: 0, status: 'Pending', targetDate: '19 ก.พ.' },
-  { id: '7', category: 'โถงทางเดิน', location: 'Floor 7', totalDefects: 32, fixedDefects: 0, status: 'Pending', targetDate: '23 ก.พ.' },
-  { id: '8', category: 'โถงทางเดิน', location: 'Floor 8', totalDefects: 9, fixedDefects: 0, status: 'Pending', targetDate: '28 ก.พ.' },
+  // Rooftop
+  { id: '201', category: 'ดาดฟ้า', location: 'Rooftop (ดาดฟ้า)', totalDefects: 10, fixedDefects: 10, status: 'Completed' },
+  { id: '202', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Rooftop Pump Room', totalDefects: 3, fixedDefects: 3, status: 'Completed' },
 
-  // Garbage Rooms per floor (Moved here)
-  { id: '19', category: 'ห้องขยะประจำชั้น', location: 'Floor 2', totalDefects: 0, fixedDefects: 0, status: 'No Defect' },
-  { id: '20', category: 'ห้องขยะประจำชั้น', location: 'Floor 3', totalDefects: 0, fixedDefects: 0, status: 'No Defect' },
-  { id: '21', category: 'ห้องขยะประจำชั้น', location: 'Floor 4', totalDefects: 0, fixedDefects: 0, status: 'Not Checked', note: 'System storage', targetDate: '10 ก.พ.' },
-  { id: '22', category: 'ห้องขยะประจำชั้น', location: 'Floor 5', totalDefects: 7, fixedDefects: 0, status: 'Pending', targetDate: '14 ก.พ.' },
-  { id: '23', category: 'ห้องขยะประจำชั้น', location: 'Floor 6', totalDefects: 8, fixedDefects: 0, status: 'Pending', targetDate: '19 ก.พ.' },
-  { id: '24', category: 'ห้องขยะประจำชั้น', location: 'Floor 7', totalDefects: 9, fixedDefects: 0, status: 'Pending', targetDate: '23 ก.พ.' },
-  { id: '25', category: 'ห้องขยะประจำชั้น', location: 'Floor 8', totalDefects: 9, fixedDefects: 0, status: 'Pending', targetDate: '28 ก.พ.' },
+  // Corridor
+  { id: '302', category: 'โถงทางเดิน', location: 'Floor 2', totalDefects: 16, fixedDefects: 16, status: 'Completed' },
+  { id: '303', category: 'โถงทางเดิน', location: 'Floor 3', totalDefects: 23, fixedDefects: 23, status: 'Fixed (Wait CM)', note: 'รอ CM ตัด' },
+  { id: '304', category: 'โถงทางเดิน', location: 'Floor 4', totalDefects: 23, fixedDefects: 23, status: 'Fixed (Wait CM)', note: 'รอ CM ตัด' },
+  { id: '305', category: 'โถงทางเดิน', location: 'Floor 5', totalDefects: 39, fixedDefects: 39, status: 'Fixed (Wait CM)', targetDate: '5/2/69', note: 'เก็บงานแล้วเสร็จ' },
+  { id: '306', category: 'โถงทางเดิน', location: 'Floor 6', totalDefects: 39, fixedDefects: 0, status: 'Pending', targetDate: '1/3/69' },
+  { id: '307', category: 'โถงทางเดิน', location: 'Floor 7', totalDefects: 32, fixedDefects: 0, status: 'Pending', targetDate: '1/3/69' },
+  { id: '308', category: 'โถงทางเดิน', location: 'Floor 8', totalDefects: 9, fixedDefects: 0, status: 'Pending', targetDate: '26/2/69' },
 
   // Stairs
-  { id: '9', category: 'บันได', location: 'Stairs ST-1', totalDefects: 43, fixedDefects: 0, status: 'Fixed (Wait CM)' },
-  { id: '10', category: 'บันได', location: 'Stairs ST-2', totalDefects: 32, fixedDefects: 0, status: 'Pending', targetDate: '6 ก.พ.' },
+  { id: '401', category: 'บันได', location: 'Stairs ST-1', totalDefects: 43, fixedDefects: 0, status: 'Pending', targetDate: '10/2/69' },
+  { id: '402', category: 'บันได', location: 'Stairs ST-2', totalDefects: 32, fixedDefects: 0, status: 'Pending', targetDate: '13/2/69' },
 
-  // Rooms
-  { id: '11', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Security Room (ห้องรปภ.)', totalDefects: 4, fixedDefects: 0, status: 'Pending', targetDate: '6 ก.พ.' },
-  { id: '12', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'MDB Room', totalDefects: 9, fixedDefects: 0, status: 'Pending', targetDate: '6 ก.พ.' },
-  { id: '13', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Juristic Room (นิติ)', totalDefects: 17, fixedDefects: 17, status: 'Fixed (Wait CM)', note: 'Completed, Waiting CM' },
-  { id: '14', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Laundry Room (ซักรีด)', totalDefects: 10, fixedDefects: 10, status: 'Fixed (Wait CM)', note: 'Completed, Waiting CM' },
-  { id: '15', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Pump Room Floor 1', totalDefects: 9, fixedDefects: 0, status: 'Pending', targetDate: '10 ก.พ.' },
-  { id: '16', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Security Toilet', totalDefects: 5, fixedDefects: 0, status: 'Pending', targetDate: '10 ก.พ.' },
-  { id: '17', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Garbage Room (Main)', totalDefects: 19, fixedDefects: 0, status: 'Pending', targetDate: '16 ก.พ.' },
-  { id: '18', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Rooftop Pump Room', totalDefects: 3, fixedDefects: 0, status: 'Pending', targetDate: '13 ก.พ.' },
+  // Common Rooms
+  { id: '501', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'ลานจอดชั้น 1', totalDefects: 13, fixedDefects: 0, status: 'Pending', targetDate: '6/2/69', note: 'แล้วเสร็จ 6/2/69' },
+  { id: '502', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Security Room (ห้องรปภ.)', totalDefects: 4, fixedDefects: 0, status: 'Pending', targetDate: '5/2/69', note: 'แก้ไขแล้วเสร็จ 5/2/69' },
+  { id: '503', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'MDB Room', totalDefects: 9, fixedDefects: 0, status: 'Pending', targetDate: '7/2/69' },
+  { id: '504', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Juristic Room (นิติ)', totalDefects: 17, fixedDefects: 17, status: 'Fixed (Wait CM)', targetDate: '4/2/69' },
+  { id: '505', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Laundry Room (ซักรีด)', totalDefects: 10, fixedDefects: 10, status: 'Fixed (Wait CM)', targetDate: '4/2/69' },
+  { id: '506', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Pump Room Floor 1', totalDefects: 9, fixedDefects: 9, status: 'Fixed (Wait CM)', targetDate: '4/2/69' },
+  { id: '507', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Security Toilet (น้ำรปภ)', totalDefects: 5, fixedDefects: 5, status: 'Fixed (Wait CM)', targetDate: '4/2/69' },
+  { id: '508', category: 'ห้องเครื่อง/ห้องส่วนกลาง', location: 'Garbage Room (Main)', totalDefects: 19, fixedDefects: 0, status: 'Pending', targetDate: '19/2/69' },
 
-  // Facade
-  { id: '26', category: 'รูปด้านอาคาร', location: 'Building Facade (รูปด้านอาคาร)', totalDefects: 19, fixedDefects: 17, status: 'Pending', targetDate: '6 ก.พ.' },
+  // Garbage Rooms per floor
+  { id: '602', category: 'ห้องขยะประจำชั้น', location: 'Floor 2', totalDefects: 0, fixedDefects: 0, status: 'No Defect' },
+  { id: '603', category: 'ห้องขยะประจำชั้น', location: 'Floor 3', totalDefects: 0, fixedDefects: 0, status: 'No Defect' },
+  { id: '604', category: 'ห้องขยะประจำชั้น', location: 'Floor 4', totalDefects: 0, fixedDefects: 0, status: 'Not Checked', targetDate: '5/2/69', note: 'เก็บของงานระบบ' },
+  { id: '605', category: 'ห้องขยะประจำชั้น', location: 'Floor 5', totalDefects: 7, fixedDefects: 7, status: 'Fixed (Wait CM)', targetDate: '5/2/69' },
+  { id: '606', category: 'ห้องขยะประจำชั้น', location: 'Floor 6', totalDefects: 8, fixedDefects: 8, status: 'Fixed (Wait CM)', targetDate: '5/2/69' },
+  { id: '607', category: 'ห้องขยะประจำชั้น', location: 'Floor 7', totalDefects: 9, fixedDefects: 9, status: 'Fixed (Wait CM)', targetDate: '5/2/69' },
+  { id: '608', category: 'ห้องขยะประจำชั้น', location: 'Floor 8', totalDefects: 9, fixedDefects: 9, status: 'Fixed (Wait CM)', targetDate: '5/2/69' },
+
+  // Electrical Rooms (New)
+  { id: '702', category: 'ห้องไฟฟ้าประจำชั้น', location: 'Floor 2', totalDefects: 2, fixedDefects: 0, status: 'Pending' },
+  { id: '703', category: 'ห้องไฟฟ้าประจำชั้น', location: 'Floor 3', totalDefects: 2, fixedDefects: 0, status: 'Pending' },
+  { id: '704', category: 'ห้องไฟฟ้าประจำชั้น', location: 'Floor 4', totalDefects: 3, fixedDefects: 0, status: 'Pending' },
+  { id: '705', category: 'ห้องไฟฟ้าประจำชั้น', location: 'Floor 5', totalDefects: 2, fixedDefects: 0, status: 'Pending' },
+  { id: '706', category: 'ห้องไฟฟ้าประจำชั้น', location: 'Floor 6', totalDefects: 3, fixedDefects: 0, status: 'Pending' },
+  { id: '707', category: 'ห้องไฟฟ้าประจำชั้น', location: 'Floor 7', totalDefects: 3, fixedDefects: 0, status: 'Pending' },
+  { id: '708', category: 'ห้องไฟฟ้าประจำชั้น', location: 'Floor 8', totalDefects: 3, fixedDefects: 0, status: 'Pending' },
 ];
 
 export const STATUS_COLORS: Record<string, string> = {
