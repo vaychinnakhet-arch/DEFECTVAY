@@ -487,13 +487,24 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
                         <td className="border border-slate-300 px-4 py-2 text-center text-red-600 font-bold bg-red-50/10 align-middle">
                           {remaining}
                         </td>
-                        <td className="border border-slate-300 px-0 py-0 text-center relative align-middle">
-                           <input 
-                              type="date"
-                              className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 text-indigo-700 font-bold text-base font-sans"
-                              value={defect.targetDate || ''}
-                              onChange={(e) => handleUpdate(defect.id, 'targetDate', e.target.value)}
-                           />
+                        <td className="border border-slate-300 px-0 py-0 text-center relative align-middle group/date">
+                           <div className="relative w-full h-full flex items-center justify-center">
+                               <input 
+                                  type="date"
+                                  className="w-full h-full py-2 text-center bg-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:z-10 text-indigo-700 font-bold text-base font-sans"
+                                  value={defect.targetDate || ''}
+                                  onChange={(e) => handleUpdate(defect.id, 'targetDate', e.target.value)}
+                               />
+                               {defect.targetDate && (
+                                  <button
+                                    onClick={() => handleUpdate(defect.id, 'targetDate', '')}
+                                    className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover/date:opacity-100 group-focus-within/date:opacity-100 transition-all z-20 print:hidden"
+                                    title="Clear Date"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                               )}
+                           </div>
                         </td>
                         <td className="border border-slate-300 px-1 py-1 text-center align-middle">
                            <select 
