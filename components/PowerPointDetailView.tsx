@@ -14,6 +14,35 @@ type DisplayItem =
 const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Helper to format date: 2026-02-13 -> 13 ก.พ. 69
+  const formatThaiDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    
+    // Check if it matches YYYY-MM-DD format strictly to avoid parsing errors
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+        const y = parseInt(parts[0]);
+        const m = parseInt(parts[1]);
+        const d = parseInt(parts[2]);
+        
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+            const thaiMonths = [
+                'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'
+            ];
+            
+            // Validate month index
+            if (m >= 1 && m <= 12) {
+                const thaiYear = (y + 543).toString().slice(-2);
+                return `${d} ${thaiMonths[m - 1]} ${thaiYear}`;
+            }
+        }
+    }
+    
+    // Fallback: Return original if not YYYY-MM-DD
+    return dateString;
+  };
+
   // 1. Group items by category to create a flat display list with headers
   const displayList = React.useMemo(() => {
     const categories: string[] = Array.from(new Set(defects.map(d => d.category)));
@@ -82,7 +111,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
           <th className="py-1 px-1 text-xs font-bold text-slate-800 align-middle">LOCATION</th>
           <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-10 align-middle">TOT</th>
           <th className="py-1 px-1 text-xs font-bold text-emerald-700 text-center w-10 align-middle">FIX</th>
-          <th className="py-1 px-1 text-xs font-bold text-indigo-700 text-center w-16 align-middle">TARGET</th>
+          <th className="py-1 px-1 text-xs font-bold text-indigo-700 text-center w-20 align-middle">TARGET</th>
           <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-28 align-middle">STATUS</th>
         </tr>
       </thead>
@@ -117,7 +146,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
                 {defect.fixedDefects}
               </td>
               <td className="py-1 px-1 text-xs text-center font-medium text-indigo-600 align-middle whitespace-nowrap">
-                {defect.targetDate || '-'}
+                {formatThaiDate(defect.targetDate)}
               </td>
               <td className="py-1 px-1 text-center align-middle">
                 {defect.status === 'แก้ไขเรียบร้อย รอนัดตรวจ' ? (
