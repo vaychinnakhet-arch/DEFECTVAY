@@ -9,7 +9,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
   // --- Data Aggregation Logic ---
 
@@ -123,7 +123,15 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
   };
 
   const toggleExpand = (key: string) => {
-    setExpandedKey(prev => prev === key ? null : key);
+    setExpandedKeys(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
   };
 
   // Helper to render expanded detail list
@@ -216,7 +224,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                         <div className="w-full space-y-3">
                             {fixedCategories.map((cat, idx) => {
                                 const key = `fixed-${cat.name}`;
-                                const isExpanded = expandedKey === key;
+                                const isExpanded = expandedKeys.has(key);
                                 return (
                                     <div 
                                         key={idx} 
@@ -258,7 +266,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                         <div className="w-full space-y-3">
                             {pendingCategories.map((cat, idx) => {
                                 const key = `pending-${cat.name}`;
-                                const isExpanded = expandedKey === key;
+                                const isExpanded = expandedKeys.has(key);
                                 return (
                                     <div 
                                         key={idx} 
@@ -300,7 +308,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
                         <div className="w-full space-y-3">
                             {waitingCategories.map((cat, idx) => {
                                 const key = `waiting-${cat.name}`;
-                                const isExpanded = expandedKey === key;
+                                const isExpanded = expandedKeys.has(key);
                                 return (
                                     <div 
                                         key={idx} 
