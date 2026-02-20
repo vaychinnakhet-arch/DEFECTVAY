@@ -17,12 +17,16 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
   const grandTotal = defects.reduce((sum, d) => sum + d.totalDefects, 0);
 
   // 2. Verified Fixed
-  const verifiedFixedItems = defects.filter(d => d.status === 'แก้ไขเรียบร้อย' || (d.totalDefects > 0 && d.totalDefects === d.fixedDefects && d.status !== 'แก้ไขเรียบร้อย รอนัดตรวจ'));
+  const verifiedFixedItems = defects.filter(d => 
+    d.status === 'แก้ไขเรียบร้อย' || 
+    d.status === 'แก้ไขเรียบร้อย รอนัดตรวจ' || 
+    (d.totalDefects > 0 && d.totalDefects === d.fixedDefects)
+  );
   const verifiedFixedCount = verifiedFixedItems.reduce((sum, d) => sum + d.fixedDefects, 0);
 
   // 3. Waiting Inspection
   const waitingItems = defects.filter(d => d.status === 'แก้ไขเรียบร้อย รอนัดตรวจ');
-  const waitingCount = waitingItems.reduce((sum, d) => sum + d.totalDefects, 0);
+  const waitingCount = waitingItems.reduce((sum, d) => sum + (d.totalDefects - d.fixedDefects), 0);
 
   // 4. Pending / Not Fixed
   const pendingCount = grandTotal - verifiedFixedCount - waitingCount;
@@ -46,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
   };
 
   const fixedCategories = groupByCategory(verifiedFixedItems, 'fixed');
-  const waitingCategories = groupByCategory(waitingItems, 'total');
+  const waitingCategories = groupByCategory(waitingItems, 'remaining');
   
   const pendingGroups: Record<string, number> = {};
   defects.forEach(d => {
@@ -132,7 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
         countKey = 'fixedDefects';
     } else if (type === 'waiting') {
         items = waitingItems.filter(d => d.category === categoryName);
-        countKey = 'totalDefects';
+        countKey = 'remaining';
     } else { // pending
         items = defects.filter(d => 
             d.category === categoryName && 
