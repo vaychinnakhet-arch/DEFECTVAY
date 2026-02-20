@@ -136,36 +136,32 @@ const Dashboard: React.FC<DashboardProps> = ({ defects }) => {
 
   // Helper to render expanded detail list
   const renderDetails = (categoryName: string, type: 'fixed' | 'pending' | 'waiting') => {
-    let items: DefectRecord[] = [];
-    let countKey: 'fixedDefects' | 'totalDefects' | 'remaining' = 'totalDefects';
-
-    if (type === 'fixed') {
-        items = verifiedFixedItems.filter(d => d.category === categoryName);
-        countKey = 'fixedDefects';
-    } else if (type === 'waiting') {
-        items = waitingItems.filter(d => d.category === categoryName);
-        countKey = 'remaining';
-    } else { // pending
-        items = defects.filter(d => 
-            d.category === categoryName && 
-            d.status !== 'แก้ไขเรียบร้อย รอนัดตรวจ' && 
-            d.status !== 'แก้ไขเรียบร้อย' &&
-            (d.totalDefects - d.fixedDefects > 0)
-        );
-        countKey = 'remaining';
-    }
+    // Get ALL items for this category to ensure we show 0s
+    const items = defects.filter(d => d.category === categoryName);
 
     return (
         <div className="mt-2 pl-2 pr-2 border-t border-slate-100 pt-2 space-y-1 animate-fade-in">
             {items.map(item => {
-                const count = countKey === 'remaining' 
-                    ? (item.totalDefects - item.fixedDefects) 
-                    : item[countKey];
+                let count = 0;
+
+                if (type === 'fixed') {
+                    count = item.fixedDefects;
+                } else if (type === 'waiting') {
+                    // Only count if status is 'แก้ไขเรียบร้อย รอนัดตรวจ'
+                    if (item.status === 'แก้ไขเรียบร้อย รอนัดตรวจ') {
+                        count = item.totalDefects - item.fixedDefects;
+                    }
+                } else { // pending
+                    // Count if NOT fixed and NOT waiting
+                    if (item.status !== 'แก้ไขเรียบร้อย รอนัดตรวจ' && item.status !== 'แก้ไขเรียบร้อย') {
+                        count = item.totalDefects - item.fixedDefects;
+                    }
+                }
                 
                 return (
                     <div key={item.id} className="flex justify-between items-start text-xs text-slate-500 py-1 border-b border-slate-50 last:border-0">
                         <span className="truncate pr-2">{item.location}</span>
-                        <span className="font-mono font-semibold bg-slate-100 px-1.5 rounded">{count}</span>
+                        <span className={`font-mono font-semibold px-1.5 rounded ${count === 0 ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-700'}`}>{count}</span>
                     </div>
                 );
             })}

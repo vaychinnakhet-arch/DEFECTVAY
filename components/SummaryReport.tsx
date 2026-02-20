@@ -47,10 +47,15 @@ const SummaryReport: React.FC<SummaryReportProps> = ({ defects, onUpdate, onAdd,
         if (field === 'totalDefects' || field === 'fixedDefects') {
              const t = Number(updatedDefect.totalDefects);
              const f = Number(updatedDefect.fixedDefects);
-             if (t > 0 && t === f) {
-                 updatedDefect.status = 'แก้ไขเรียบร้อย';
-             } else if (f === 0 && t > 0) {
-                 if (defect.status === 'แก้ไขเรียบร้อย') updatedDefect.status = 'รอดำเนินการ';
+             
+             if (t > 0) {
+                 if (f === t) {
+                     updatedDefect.status = 'แก้ไขเรียบร้อย';
+                 } else if (f > 0 && f < t) {
+                     updatedDefect.status = 'แก้ไขเรียบร้อย รอนัดตรวจ';
+                 } else if (f === 0) {
+                     updatedDefect.status = 'รอดำเนินการ';
+                 }
              }
         }
 
