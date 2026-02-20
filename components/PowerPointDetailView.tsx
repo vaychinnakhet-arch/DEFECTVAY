@@ -111,6 +111,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
           <th className="py-1 px-1 text-xs font-bold text-slate-800 align-middle">LOCATION</th>
           <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-10 align-middle">TOT</th>
           <th className="py-1 px-1 text-xs font-bold text-emerald-700 text-center w-10 align-middle">FIX</th>
+          <th className="py-1 px-1 text-xs font-bold text-red-700 text-center w-10 align-middle">REM</th>
           <th className="py-1 px-1 text-xs font-bold text-indigo-700 text-center w-20 align-middle">TARGET</th>
           <th className="py-1 px-1 text-xs font-bold text-slate-700 text-center w-28 align-middle">STATUS</th>
         </tr>
@@ -120,7 +121,7 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
           if (item.type === 'header') {
              return (
                <tr key={`header-${item.title}-${idx}`} className="bg-indigo-50 border-b border-indigo-100">
-                 <td colSpan={6} className="py-1 px-2 text-xs font-bold text-indigo-800 uppercase tracking-wider align-middle">
+                 <td colSpan={7} className="py-1 px-2 text-xs font-bold text-indigo-800 uppercase tracking-wider align-middle">
                    {item.title}
                  </td>
                </tr>
@@ -144,6 +145,9 @@ const PowerPointDetailView: React.FC<PowerPointDetailViewProps> = ({ defects }) 
               </td>
               <td className="py-1 px-1 text-sm text-center font-bold text-emerald-600 align-middle">
                 {defect.fixedDefects}
+              </td>
+              <td className="py-1 px-1 text-sm text-center font-bold text-red-600 align-middle">
+                {defect.totalDefects - defect.fixedDefects}
               </td>
               <td className="py-1 px-1 text-xs text-center font-medium text-indigo-600 align-middle whitespace-nowrap">
                 {formatThaiDate(defect.targetDate)}
